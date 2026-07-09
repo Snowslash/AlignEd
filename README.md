@@ -101,6 +101,10 @@ This is an early local-first tool. It is suitable for testing the teaching-evide
 
 Before publishing a public hosted version, add a real feedback collection route, clear privacy wording and a deployment-specific review of data handling.
 
+## Licence
+
+AlignEd is released under the MIT License. See `LICENSE`.
+
 ## Development notes
 
 Main scripts:

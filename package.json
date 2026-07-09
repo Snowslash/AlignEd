@@ -37,5 +37,6 @@
     "medical-education",
     "local-first",
     "react"
-  ]
+  ],
+  "license": "MIT"
 }
