@@ -3,12 +3,15 @@ import {
   buildDemoSession,
   buildFeedbackSummary,
   buildGibbsReflectionDraft,
+  buildReflectionSuggestion,
   buildMarkdownExport,
   buildQuickSession,
   checkAlignment,
   checkDose,
+  deserialiseSessions,
   flagObjectiveText,
   parseFeedbackCsv,
+  previewFeedbackCsv,
   scoreUtility,
   formatUkDate,
   parseUkDate,
@@ -67,6 +70,33 @@ describe('AlignEd domain', () => {
     expect(summary.themes).toContain('More practice');
   });
 
+  it('previews strict feedback CSV without fabricating missing scores', () => {
+    const preview = previewFeedbackCsv('clarity,usefulness,pre_confidence,post_confidence,one_change,source\n5,,2,,More practice,paper');
+
+    expect(preview).toMatchObject({ ok: true, rowCount: 1 });
+    if (!preview.ok) throw new Error('Expected valid CSV preview');
+    expect(preview.rows[0]).toMatchObject({ clarity: 5, preConfidence: 2, freeText: 'More practice', source: 'paper' });
+    expect(preview.rows[0]?.usefulness).toBeUndefined();
+    expect(preview.rows[0]?.postConfidence).toBeUndefined();
+    expect(buildFeedbackSummary(preview.rows)).toMatchObject({ averageUsefulness: undefined, averageConfidenceGain: undefined });
+  });
+
+  it.each([
+    ['', 'usable header row'],
+    ['clarity,usefulness\n5,4,extra', 'inconsistent number of cells'],
+    ['clarity,clarity\n5,4', 'duplicate header'],
+    ['unknown\nvalue', 'recognised feedback header'],
+    ['clarity,usefulness\n"5,4', 'unbalanced quote'],
+    ['clarity,usefulness', 'no feedback rows'],
+  ])('rejects malformed feedback CSV: %s', (csv, message) => {
+    const preview = previewFeedbackCsv(csv);
+
+    expect(preview.ok).toBe(false);
+    if (preview.ok) throw new Error('Expected invalid CSV preview');
+    expect(preview.error).toMatch(new RegExp(message, 'i'));
+    expect(parseFeedbackCsv(csv)).toEqual([]);
+  });
+
   it('creates a Gibbs-first reflection draft and Markdown evidence export', () => {
     const session = buildDemoSession();
     const feedback = buildFeedbackSummary(session.feedbackResponses);
@@ -85,6 +115,42 @@ describe('AlignEd domain', () => {
     expect(md).not.toContain('## Rigour Mode notes');
     expect(md).toContain('Generic teaching evidence');
     expect(md).not.toContain('PGCert');
+    expect(md).toContain('## Forward evaluation measure');
+    expect(md).toContain(reflection.forwardEvaluationMeasure);
+  });
+
+  it('exports an honest no-feedback evidence pack without fabricated averages or learner outcomes', () => {
+    const session = buildQuickSession({
+      title: 'Ward suturing',
+      date: '2026-07-02',
+      audience: 'FY1 doctors',
+      topic: 'Simple interrupted sutures',
+      durationMinutes: 30,
+      setting: 'Ward skills corner',
+    });
+    const markdown = buildMarkdownExport(session, buildFeedbackSummary([]), session.reflection);
+
+    expect(markdown).toContain('No learner feedback was recorded.');
+    expect(markdown).toContain('No learner response, average, or learner outcome is reported.');
+    expect(markdown).not.toContain('Average clarity: 0');
+    expect(markdown).not.toContain('Average usefulness: 0');
+    expect(markdown).not.toContain('## Kirkpatrick evaluation spine');
+    expect(markdown).toContain('## Forward evaluation measure');
+    expect(markdown).toContain(session.reflection.forwardEvaluationMeasure);
+  });
+
+  it('builds a feedback suggestion without changing the authored reflection', () => {
+    const session = buildDemoSession();
+    const authoredReflection = {
+      ...session.reflection,
+      sections: { ...session.reflection.sections, feelings: 'The clinician wrote this reflection.' },
+    };
+    const feedback = buildFeedbackSummary([{ clarity: 5, usefulness: 5, preConfidence: 2, postConfidence: 4 }]);
+
+    const suggestion = buildReflectionSuggestion({ ...session, reflection: authoredReflection }, feedback);
+
+    expect(suggestion.sections.evaluation).toContain('1 learner response captured');
+    expect(authoredReflection.sections.feelings).toBe('The clinician wrote this reflection.');
   });
 
   it('formats and parses UK dates for display', () => {
@@ -93,4 +159,35 @@ describe('AlignEd domain', () => {
     expect(parseUkDate('2/7/26')).toBe('2026-07-02');
   });
 
+  it('accepts version-1 envelopes and legacy session arrays while rejecting unsupported versions', () => {
+    const session = buildDemoSession();
+
+    expect(deserialiseSessions(JSON.stringify({ version: 1, sessions: [session] }))).toHaveLength(1);
+    expect(deserialiseSessions(JSON.stringify([session]))).toHaveLength(1);
+    expect(() => deserialiseSessions(JSON.stringify({ version: 2, sessions: [session] }))).toThrow('Unsupported backup version');
+  });
+
+  it('rejects impossible ISO dates in imported sessions', () => {
+    const session = { ...buildDemoSession(), date: '2026-02-30' };
+
+    expect(() => deserialiseSessions(JSON.stringify({ version: 1, sessions: [session] }))).toThrow('Session 1 has an invalid date.');
+  });
+
+  it('rejects feedback fields whose imported values violate their declared types or score range', () => {
+    const numericText = { ...buildDemoSession(), feedbackResponses: [{ freeText: 3 }] };
+    const stringScore = { ...buildDemoSession(), feedbackResponses: [{ clarity: '5' }] };
+    const outOfRangeScore = { ...buildDemoSession(), feedbackResponses: [{ usefulness: 9 }] };
+
+    for (const session of [numericText, stringScore, outOfRangeScore]) {
+      expect(() => deserialiseSessions(JSON.stringify({ version: 1, sessions: [session] }))).toThrow('Session 1 has invalid feedback responses.');
+    }
+  });
+
+  it('rejects backup imports containing duplicate session IDs', () => {
+    const session = buildDemoSession();
+    const duplicate = { ...session, title: 'Duplicate record' };
+
+    expect(() => deserialiseSessions(JSON.stringify({ version: 1, sessions: [session, duplicate] })))
+      .toThrow(`Backup contains duplicate session ID: ${session.id}.`);
+  });
 });

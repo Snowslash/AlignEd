@@ -91,7 +91,8 @@ Inside the app:
 
 - Use “Download JSON backup” to save all sessions.
 - Use “Import JSON backup” to restore a previous backup.
-- Use “Copy Markdown export” or “Download .md” on the Reflection/export page to save an evidence pack for one session.
+- Use the distinct **Reflect** stage to write and revise the Gibbs reflection.
+- Use **Copy Markdown**, **Download Markdown** or **Print or save PDF** in the **Export** stage to save an evidence pack for one session.
 
 The JSON backup is for app data. The Markdown export is for your portfolio evidence record.
 
@@ -117,4 +118,4 @@ npm run build    # create a production build
 npm run check    # lint, test and build
 ```
 
-AlignEd is built with React, TypeScript and Vite.
+AlignEd is built with React, TypeScript, Vite and Tailwind CSS. The interface uses local shadcn/ui component source under `src/components/ui/`; migration from the original custom CSS is intentionally incremental so each workflow slice remains tested.
