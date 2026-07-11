@@ -1,0 +1,18 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "aligned",
+  "compatibility_date": "2026-07-11",
+  "observability": {
+    "enabled": false
+  },
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application"
+  },
+  "routes": [
+    {
+      "pattern": "aligned.sangeev.me",
+      "custom_domain": true
+    }
+  ]
+}
