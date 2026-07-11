@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "./styles/public-estate-header.css";
 @import "./styles/theme-toggle.css";
 
 @custom-variant dark (&:is(.dark *));

@@ -27,6 +27,18 @@ describe('App', () => {
     expect(screen.getByRole('button', { name: 'Switch to light mode' })).toHaveTextContent('Light');
   });
 
+  it('uses the shared public-estate header on the hosted app', () => {
+    render(<App />);
+    const navigation = screen.getByRole('navigation', { name: 'Primary navigation' });
+    expect(navigation).toBeVisible();
+    expect(navigation.closest('header')).toHaveAttribute('data-print-hidden');
+    expect(screen.getByRole('link', { name: 'Sangeev' })).toHaveAttribute('href', 'https://sangeev.me');
+    expect(screen.getByRole('link', { name: 'Tools' })).toHaveAttribute('href', 'https://sangeev.me/#tools');
+    expect(screen.getByRole('link', { name: 'AlignEd' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('link', { name: 'Op notes' })).toBeVisible();
+    expect(screen.getByRole('link', { name: 'Scratchpad' })).toBeVisible();
+  });
+
   it('starts on a sessions home with two explicit entry routes', async () => {
     const { container } = render(<App />);
 
@@ -35,7 +47,7 @@ describe('App', () => {
     expect(screen.queryByText(/Browser-only · no account/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/^Saved locally$/i)).not.toBeInTheDocument();
     const description = screen.getByText(/Plan teaching, capture feedback/i);
-    expect(container.querySelector('header')).toContainElement(description);
+    expect(container.querySelector('header[data-app-header]')).toContainElement(description);
     expect(description).toHaveClass('text-sm');
     const retrospectiveRoute = screen.getByRole('button', { name: /Log teaching I have just done/i });
     expect(retrospectiveRoute).toBeInTheDocument();
@@ -703,7 +715,7 @@ describe('App', () => {
     expect(screen.getByTestId('markdown-preview')).toHaveTextContent('Observe two learners completing supervised sutures next week.');
     expect(screen.getByTestId('markdown-preview')).toHaveTextContent('No learner feedback was recorded.');
     expect(screen.getByTestId('markdown-preview')).not.toHaveTextContent('Average clarity: 0');
-    expect(document.querySelector('header')).toHaveAttribute('data-print-hidden');
+    expect(document.querySelector('header[data-app-header]')).toHaveAttribute('data-print-hidden');
     expect(screen.getByRole('navigation', { name: /Teaching evidence workflow/i })).toHaveAttribute('data-print-hidden');
     expect(screen.getByRole('button', { name: /Copy Markdown/i }).parentElement).toHaveAttribute('data-print-hidden');
     expect(screen.getByTestId('markdown-preview')).toHaveAttribute('data-print-evidence-pack');
