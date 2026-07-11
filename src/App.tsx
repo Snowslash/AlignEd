@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import './App.css';
-import { Button } from '@/components/ui/button';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { DeleteDataConfirmation } from '@/components/backup/DeleteDataConfirmation';
 import { RestoreConfirmation } from '@/components/backup/RestoreConfirmation';
 import { SessionEntryPanel } from '@/components/sessions/SessionEntryPanel';
@@ -215,18 +215,13 @@ export default function App() {
               Could not save locally. Download a backup before leaving this page.
             </span>
           )}
-          <Button
-            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-            onClick={() => {
+          <ThemeToggle
+            theme={theme}
+            onToggle={() => {
               const nextTheme: Theme = theme === 'dark' ? 'light' : 'dark';
               setTheme(applyTheme(nextTheme));
             }}
-            size="sm"
-            type="button"
-            variant="outline"
-          >
-            {theme === 'dark' ? 'Light' : 'Dark'}
-          </Button>
+          />
         </div>
       </header>
       {loadError && <p className="mt-4 rounded-sm border border-destructive/45 bg-destructive/10 p-3 text-sm text-destructive" role="alert">{loadError} Restore a valid backup to resume local saving.</p>}

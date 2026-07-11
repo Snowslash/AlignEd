@@ -18,6 +18,15 @@ describe('App', () => {
     vi.restoreAllMocks();
   });
 
+  it('uses the shared estate theme control markup', async () => {
+    render(<App />);
+    const toggle = screen.getByRole('button', { name: 'Switch to dark mode' });
+    expect(toggle).toHaveClass('theme-toggle');
+    expect(toggle.querySelector('svg')).not.toBeNull();
+    await userEvent.click(toggle);
+    expect(screen.getByRole('button', { name: 'Switch to light mode' })).toHaveTextContent('Light');
+  });
+
   it('starts on a sessions home with two explicit entry routes', async () => {
     const { container } = render(<App />);
 
