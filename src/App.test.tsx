@@ -38,6 +38,39 @@ describe('App', () => {
     expect(screen.getByRole('button', { name: /Log teaching I have just done/i })).toHaveFocus();
   });
 
+  it('explains the browser-only privacy and backup boundary on the home screen', () => {
+    render(<App />);
+
+    expect(screen.getByText(/Data is not uploaded or synced/i)).toBeInTheDocument();
+    expect(screen.getByText(/remain on this device until deleted or browser data is cleared/i)).toBeInTheDocument();
+    expect(screen.getByText(/Do not enter patient-identifiable information/i)).toBeInTheDocument();
+    expect(screen.getByText(/Avoid learner-identifiable information unless it is necessary/i)).toBeInTheDocument();
+    expect(screen.getByText(/Download a JSON backup before clearing browser data or moving devices/i)).toBeInTheDocument();
+  });
+
+  it('requires confirmation before deleting every locally stored session', async () => {
+    const session = buildDemoSession();
+    localStorage.setItem('aligned.sessions.v1', serialiseSessions([session]));
+    localStorage.setItem('teaching-portfolio-tracker.sessions.v1', serialiseSessions([session]));
+    render(<App />);
+
+    await userEvent.click(screen.getByRole('button', { name: /Delete all local data/i }));
+    expect(screen.getByRole('dialog', { name: /Delete all local data/i })).toBeInTheDocument();
+    expect(screen.getByText(/cannot be undone/i)).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /Cancel deletion/i }));
+    expect(screen.getByRole('button', { name: new RegExp(session.title, 'i') })).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /Delete all local data/i }));
+    await userEvent.click(screen.getByRole('button', { name: /^Delete local data$/i }));
+
+    expect(screen.getByText(/No sessions yet/i)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: new RegExp(session.title, 'i') })).not.toBeInTheDocument();
+    expect(localStorage.getItem('teaching-portfolio-tracker.sessions.v1')).toBeNull();
+    expect(JSON.parse(localStorage.getItem('aligned.sessions.v1') ?? '{}').sessions).toEqual([]);
+    expect(screen.getByRole('status')).toHaveTextContent(/Deleted all locally stored sessions/i);
+  });
+
   it('loads an existing library from the legacy storage key', () => {
     const legacySession = buildQuickSession({
       title: 'Legacy storage session',

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import './App.css';
 import { Button } from '@/components/ui/button';
+import { DeleteDataConfirmation } from '@/components/backup/DeleteDataConfirmation';
 import { RestoreConfirmation } from '@/components/backup/RestoreConfirmation';
 import { SessionEntryPanel } from '@/components/sessions/SessionEntryPanel';
 import { SessionsHome } from '@/components/sessions/SessionsHome';
@@ -103,6 +104,7 @@ export default function App() {
   const [entryErrors, setEntryErrors] = useState<CaptureValidationErrors>({});
   const [importStatus, setImportStatus] = useState('');
   const [pendingImport, setPendingImport] = useState<TeachingSession[] | null>(null);
+  const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
   const [backupImportFocusRequest, setBackupImportFocusRequest] = useState(0);
   const [persistenceStatus, setPersistenceStatus] = useState<'idle' | 'saved' | 'error'>('idle');
   const [currentStage, setCurrentStage] = useState<WorkspaceStageId>('capture');
@@ -191,6 +193,15 @@ export default function App() {
     setBackupImportFocusRequest((request) => request + 1);
   };
 
+  const deleteAllLocalData = () => {
+    localStorage.removeItem(LEGACY_STORAGE_KEY);
+    setSessions([]);
+    setSelectedId(undefined);
+    setEntryMode(null);
+    setImportStatus('Deleted all locally stored sessions from this browser.');
+    setDeleteConfirmationOpen(false);
+  };
+
   return (
     <main className="mx-auto min-h-screen max-w-[1480px] px-4 py-5 sm:px-6 lg:px-8">
       <header className="flex flex-wrap items-start justify-between gap-4 border-b border-border pb-5" data-print-hidden>
@@ -232,6 +243,7 @@ export default function App() {
           onOpenSession={openSession}
           onAddDemo={addDemo}
           onDownloadBackup={() => downloadText('aligned-backup.json', serialiseSessions(sessions))}
+          onDeleteAllData={() => setDeleteConfirmationOpen(true)}
           onImportBackup={previewJsonImport}
         />
       )}
@@ -279,6 +291,13 @@ export default function App() {
           onConfirm={confirmJsonImport}
           onDownloadCurrentBackup={() => downloadText('aligned-backup.json', serialiseSessions(sessions))}
           sessionCount={pendingImport.length}
+        />
+      )}
+      {deleteConfirmationOpen && (
+        <DeleteDataConfirmation
+          onCancel={() => setDeleteConfirmationOpen(false)}
+          onConfirm={deleteAllLocalData}
+          sessionCount={sessions.length}
         />
       )}
     </main>

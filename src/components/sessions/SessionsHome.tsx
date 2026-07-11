@@ -15,6 +15,7 @@ interface SessionsHomeProps {
   onAddDemo: () => void;
   backupImportFocusRequest: number;
   onDownloadBackup: () => void;
+  onDeleteAllData: () => void;
   onImportBackup: (raw: string) => void;
 }
 
@@ -26,6 +27,7 @@ export function SessionsHome({
   onAddDemo,
   backupImportFocusRequest,
   onDownloadBackup,
+  onDeleteAllData,
   onImportBackup,
 }: SessionsHomeProps) {
   const sortedSessions = sortSessionsForHome(sessions, todayIso());
@@ -36,6 +38,12 @@ export function SessionsHome({
         <h2 className="font-heading text-2xl font-semibold tracking-tight" id="sessions-home-title">What are you doing?</h2>
         <p className="text-muted-foreground">Capture something that has already happened or prepare the evidence plan before you teach.</p>
       </div>
+
+      <aside className="max-w-4xl rounded-sm border border-border bg-muted/45 p-4 text-sm leading-6" aria-label="Privacy and local storage">
+        <p className="font-semibold">Stored only in this browser</p>
+        <p className="mt-1 text-muted-foreground">Data is not uploaded or synced. Records remain on this device until deleted or browser data is cleared.</p>
+        <p className="mt-2 text-muted-foreground"><strong className="text-foreground">Do not enter patient-identifiable information.</strong> Avoid learner-identifiable information unless it is necessary. Download a JSON backup before clearing browser data or moving devices.</p>
+      </aside>
 
       <div className="grid gap-4 md:grid-cols-2">
         <Card className="border-primary/35 bg-card shadow-none ring-0">
@@ -98,7 +106,9 @@ export function SessionsHome({
         focusImportRequest={backupImportFocusRequest}
         importStatus={importStatus}
         onDownloadBackup={onDownloadBackup}
+        onDeleteAllData={onDeleteAllData}
         onImportBackup={onImportBackup}
+        sessionCount={sessions.length}
       />
     </section>
   );

@@ -37,6 +37,7 @@ describe('Sessions resume refinement', () => {
         importStatus=""
         onAddDemo={() => {}}
         onDownloadBackup={() => {}}
+        onDeleteAllData={() => {}}
         onImportBackup={() => {}}
         onOpenEntry={() => {}}
         onOpenSession={() => {}}
