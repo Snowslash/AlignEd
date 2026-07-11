@@ -5,6 +5,12 @@ export type AssessmentType = string;
 export type EvidenceType = 'Attendance' | 'Feedback' | 'Reflection' | 'Certificate' | 'Photo/artefact';
 export type DreyfusStage = 'Novice' | 'Advanced beginner' | 'Competent' | 'Proficient' | 'Expert';
 
+export function hasValidIsoDate(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const date = new Date(`${value}T00:00:00Z`);
+  return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value;
+}
+
 export interface Objective {
   id: string;
   text: string;
@@ -255,60 +261,126 @@ export function scoreUtility(input: UtilityScoreInput): UtilityScore {
 }
 
 function normaliseHeader(header: string): string {
-  return header.trim().toLowerCase().replace(/\s+/g, '_');
+  return header.trim().replace(/^\uFEFF/, '').toLowerCase().replace(/\s+/g, '_');
 }
 
-function splitCsvLine(line: string): string[] {
-  const cells: string[] = [];
-  let current = '';
+export type FeedbackCsvPreview =
+  | { ok: true; headers: string[]; rowCount: number; rows: FeedbackResponse[] }
+  | { ok: false; error: string; headers: string[]; rowCount: 0; rows: [] };
+
+const feedbackHeaderAliases: Record<string, keyof Pick<FeedbackResponse, 'clarity' | 'usefulness' | 'preConfidence' | 'postConfidence' | 'freeText' | 'peerObservation'>> = {
+  clarity: 'clarity',
+  usefulness: 'usefulness',
+  pre_confidence: 'preConfidence',
+  preconfidence: 'preConfidence',
+  confidence_before: 'preConfidence',
+  post_confidence: 'postConfidence',
+  postconfidence: 'postConfidence',
+  confidence_after: 'postConfidence',
+  one_change: 'freeText',
+  free_text: 'freeText',
+  comment: 'freeText',
+  comments: 'freeText',
+  peer_observation: 'peerObservation',
+  observed_teaching: 'peerObservation',
+};
+
+function parseCsvRows(csv: string): { rows: string[][] } | { error: string } {
+  const rows: string[][] = [];
+  let cells: string[] = [];
+  let cell = '';
   let quoted = false;
-  for (let i = 0; i < line.length; i += 1) {
-    const char = line[i];
-    if (char === '"' && line[i + 1] === '"') {
-      current += '"';
-      i += 1;
-    } else if (char === '"') {
-      quoted = !quoted;
+
+  const finishRow = () => {
+    cells.push(cell.trim());
+    if (cells.some((value) => value.length > 0)) rows.push(cells);
+    cells = [];
+    cell = '';
+  };
+
+  for (let index = 0; index < csv.length; index += 1) {
+    const char = csv[index];
+    if (char === '"') {
+      if (quoted && csv[index + 1] === '"') {
+        cell += '"';
+        index += 1;
+      } else {
+        quoted = !quoted;
+      }
     } else if (char === ',' && !quoted) {
-      cells.push(current.trim());
-      current = '';
+      cells.push(cell.trim());
+      cell = '';
+    } else if ((char === '\n' || char === '\r') && !quoted) {
+      if (char === '\r' && csv[index + 1] === '\n') index += 1;
+      finishRow();
     } else {
-      current += char;
+      cell += char;
     }
   }
-  cells.push(current.trim());
-  return cells;
+
+  if (quoted) return { error: 'CSV contains an unbalanced quote. Close the quoted value and preview again.' };
+  finishRow();
+  return { rows };
 }
 
-function toNumber(value: string | undefined): number | undefined {
-  if (value === undefined || value === '') return undefined;
+function previewError(error: string, headers: string[] = []): FeedbackCsvPreview {
+  return { ok: false, error, headers, rowCount: 0, rows: [] };
+}
+
+function parseFeedbackScore(value: string, header: string, rowNumber: number): number | undefined | string {
+  if (!value) return undefined;
   const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : undefined;
+  if (!Number.isFinite(parsed) || parsed < 1 || parsed > 5) {
+    return `Row ${rowNumber} has an invalid ${header} score. Use a number from 1 to 5, or leave it blank.`;
+  }
+  return parsed;
+}
+
+export function previewFeedbackCsv(csv: string): FeedbackCsvPreview {
+  const parsed = parseCsvRows(csv);
+  if ('error' in parsed) return previewError(parsed.error);
+  if (parsed.rows.length === 0) return previewError('CSV needs a usable header row before it can be previewed.');
+
+  const headers = parsed.rows[0].map(normaliseHeader);
+  if (headers.some((header) => !header)) return previewError('CSV needs a usable header row with named columns.', headers);
+  const duplicateHeader = headers.find((header, index) => headers.indexOf(header) !== index);
+  if (duplicateHeader) return previewError(`CSV has duplicate header "${duplicateHeader}". Rename one column and preview again.`, headers);
+  if (!headers.some((header) => header in feedbackHeaderAliases)) {
+    return previewError('CSV needs at least one recognised feedback header, such as clarity or usefulness.', headers);
+  }
+  if (parsed.rows.length === 1) return previewError('CSV has no feedback rows. Add at least one response below the header and preview again.', headers);
+
+  const rows: FeedbackResponse[] = [];
+  for (let index = 1; index < parsed.rows.length; index += 1) {
+    const cells = parsed.rows[index];
+    const rowNumber = index + 1;
+    if (cells.length !== headers.length) {
+      return previewError(`Row ${rowNumber} has an inconsistent number of cells. It has ${cells.length}; the header has ${headers.length}.`, headers);
+    }
+    const response: FeedbackResponse = {};
+    for (let cellIndex = 0; cellIndex < headers.length; cellIndex += 1) {
+      const header = headers[cellIndex];
+      const value = cells[cellIndex] ?? '';
+      const field = feedbackHeaderAliases[header];
+      if (field === 'clarity' || field === 'usefulness' || field === 'preConfidence' || field === 'postConfidence') {
+        const score = parseFeedbackScore(value, header.replace(/_/g, ' '), rowNumber);
+        if (typeof score === 'string') return previewError(score, headers);
+        if (score !== undefined) response[field] = score;
+      } else if (field === 'freeText' || field === 'peerObservation') {
+        if (value) response[field] = value;
+      } else if (value) {
+        response[header] = value;
+      }
+    }
+    if (Object.keys(response).length > 0) rows.push(response);
+  }
+  if (rows.length === 0) return previewError('CSV has no feedback rows with values. Add a response or remove blank rows and preview again.', headers);
+  return { ok: true, headers, rowCount: rows.length, rows };
 }
 
 export function parseFeedbackCsv(csv: string): FeedbackResponse[] {
-  const lines = csv.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
-  if (lines.length < 2) return [];
-  const headers = splitCsvLine(lines[0]).map(normaliseHeader);
-  return lines.slice(1).map((line) => {
-    const cells = splitCsvLine(line);
-    const raw: Record<string, string> = {};
-    headers.forEach((header, index) => {
-      raw[header] = cells[index] ?? '';
-    });
-    const response: FeedbackResponse = {
-      clarity: toNumber(raw.clarity),
-      usefulness: toNumber(raw.usefulness),
-      preConfidence: toNumber(raw.pre_confidence ?? raw.preconfidence ?? raw.confidence_before),
-      postConfidence: toNumber(raw.post_confidence ?? raw.postconfidence ?? raw.confidence_after),
-      freeText: raw.one_change || raw.free_text || raw.comment || raw.comments || undefined,
-      peerObservation: raw.peer_observation || raw.observed_teaching || undefined,
-    };
-    for (const [key, value] of Object.entries(raw)) {
-      if (!(key in response)) response[key] = toNumber(value) ?? value;
-    }
-    return response;
-  });
+  const preview = previewFeedbackCsv(csv);
+  return preview.ok ? preview.rows : [];
 }
 
 function average(values: Array<number | undefined>): number | undefined {
@@ -373,17 +445,33 @@ export function buildGibbsReflectionDraft(session: TeachingSession, feedback: Fe
   };
 }
 
+export function buildReflectionSuggestion(session: TeachingSession, feedback: FeedbackSummary): ReflectionDraft {
+  return buildGibbsReflectionDraft(session, feedback);
+}
+
 function mdList(items: string[]): string {
   return items.length ? items.map((item) => `- ${item}`).join('\n') : '- None recorded';
 }
 
-export function buildMarkdownExport(session: TeachingSession, feedback = buildFeedbackSummary(session.feedbackResponses), reflection = buildGibbsReflectionDraft(session, feedback)): string {
+function buildMarkdownExportWithoutForwardEvaluationMeasure(session: TeachingSession, feedback = buildFeedbackSummary(session.feedbackResponses), reflection = buildGibbsReflectionDraft(session, feedback)): string {
   const dose = checkDose(session.durationMinutes, session.objectives);
   const objectives = session.objectives.map((objective, index) => {
     const flags = flagObjectiveText(objective.text);
     return `### Objective ${index + 1}\n\n${objective.text}\n\n- Bloom: ${objective.bloom}\n- Miller: ${objective.miller || 'Not set'}\n- Activity: ${objective.activity}\n- Assessment: ${objective.assessment}\n- Evidence: ${objective.evidence.join(', ')}\n- Framework tags: ${objective.frameworkTags.join(', ') || DEFAULT_FRAMEWORK_TAG}\n- Objective wording: ${flags.length ? flags.join(' ') : 'No unmeasurable verb warning.'}`;
   }).join('\n\n');
+  if (feedback.responseCount === 0) {
+    return `# Teaching evidence pack: ${session.title}\n\nGenerated by AlignEd. Local/private artefact.\n\n## Session snapshot\n\n- Date: ${formatUkDate(session.date)}\n- Audience: ${session.audience}\n- Level: ${session.level}\n- Topic: ${session.topic}\n- Duration: ${session.durationMinutes} minutes\n- Setting: ${session.setting}\n- Framework tags: ${session.frameworkTags.join(', ') || DEFAULT_FRAMEWORK_TAG}\n\n## Objectives and education mapping\n\n${objectives}\n\n## Advanced planning notes\n\n- Advanced mode: ${session.rigour.enabled ? 'enabled' : 'off'}\n- Dose check: ${dose.status} — ${dose.message}\n- Equity prompt: ${session.rigour.equityPrompt || 'Not yet recorded'}\n\n## Feedback summary\n\nNo learner feedback was recorded. No learner response, average, or learner outcome is reported.\n\n## Reflection scaffold\n\n### Description\n${reflection.sections.description}\n\n### Feelings\n${reflection.sections.feelings}\n\n### Evaluation\n${reflection.sections.evaluation}\n\n### Analysis\n${reflection.sections.analysis}\n\n### Conclusion\n${reflection.sections.conclusion}\n\n### Action plan\n${reflection.sections.actionPlan}\n\n## Evidence notes\n\n${session.evidenceNotes || 'Add attendance, certificate, screenshot/photo, or observed-teaching evidence location here.'}\n`;
+  }
   return `# Teaching evidence pack: ${session.title}\n\nGenerated by AlignEd. Local/private artefact.\n\n## Session snapshot\n\n- Date: ${formatUkDate(session.date)}\n- Audience: ${session.audience}\n- Level: ${session.level}\n- Topic: ${session.topic}\n- Duration: ${session.durationMinutes} minutes\n- Setting: ${session.setting}\n- Framework tags: ${session.frameworkTags.join(', ') || DEFAULT_FRAMEWORK_TAG}\n\n## Objectives and education mapping\n\n${objectives}\n\n## Advanced planning notes\n\n- Advanced mode: ${session.rigour.enabled ? 'enabled' : 'off'}\n- Dose check: ${dose.status} — ${dose.message}\n- Equity prompt: ${session.rigour.equityPrompt || 'Not yet recorded'}\n\n## Feedback summary\n\n- Responses: ${feedback.responseCount}\n- Average clarity: ${feedback.averageClarity ?? 'not scored'}\n- Average usefulness: ${feedback.averageUsefulness ?? 'not scored'}\n- Average pre-confidence: ${feedback.averagePreConfidence ?? 'not scored'}\n- Average post-confidence: ${feedback.averagePostConfidence ?? 'not scored'}\n- Average confidence gain: ${feedback.averageConfidenceGain ?? 'not scored'}\n- Peer/observed teaching comments: ${feedback.peerObservationCount}\n\nThemes:\n${mdList(feedback.themes)}\n\n## Kirkpatrick evaluation spine\n\n- Reaction: ${feedback.kirkpatrick.reaction}\n- Learning: ${feedback.kirkpatrick.learning}\n- Behaviour: ${feedback.kirkpatrick.behaviour}\n- Results: ${feedback.kirkpatrick.results}\n\n## Reflection scaffold\n\n### Description\n${reflection.sections.description}\n\n### Feelings\n${reflection.sections.feelings}\n\n### Evaluation\n${reflection.sections.evaluation}\n\n### Analysis\n${reflection.sections.analysis}\n\n### Conclusion\n${reflection.sections.conclusion}\n\n### Action plan\n${reflection.sections.actionPlan}\n\n## Evidence notes\n\n${session.evidenceNotes || 'Add attendance, certificate, screenshot/photo, or observed-teaching evidence location here.'}\n`;
+}
+
+export function buildMarkdownExport(session: TeachingSession, feedback = buildFeedbackSummary(session.feedbackResponses), reflection = buildGibbsReflectionDraft(session, feedback)): string {
+  const markdown = buildMarkdownExportWithoutForwardEvaluationMeasure(session, feedback, reflection);
+  const forwardEvaluationMeasure = reflection.forwardEvaluationMeasure || 'Not yet recorded';
+  return markdown.replace(
+    '\n## Evidence notes',
+    `\n## Forward evaluation measure\n\n${forwardEvaluationMeasure}\n\n## Evidence notes`,
+  );
 }
 
 export function buildCsvTemplate(): string {
@@ -439,8 +527,76 @@ export function serialiseSessions(sessions: TeachingSession[]): string {
 }
 
 export function deserialiseSessions(raw: string): TeachingSession[] {
-  const parsed = JSON.parse(raw) as { sessions?: TeachingSession[] } | TeachingSession[];
-  const sessions = Array.isArray(parsed) ? parsed : parsed.sessions;
-  if (!Array.isArray(sessions)) throw new Error('Import file does not contain sessions.');
-  return sessions;
+  const parsed = JSON.parse(raw) as unknown;
+  const sessions = Array.isArray(parsed)
+    ? parsed
+    : isBackupEnvelope(parsed)
+      ? parsed.sessions
+      : undefined;
+  if (!Array.isArray(sessions)) throw new Error('Import file must be a version-1 backup or legacy session array.');
+  const imported = sessions.map((session, index) => normaliseImportedSession(session, index));
+  const seenIds = new Set<string>();
+  for (const session of imported) {
+    if (seenIds.has(session.id)) throw new Error(`Backup contains duplicate session ID: ${session.id}.`);
+    seenIds.add(session.id);
+  }
+  return imported;
+}
+
+function isBackupEnvelope(value: unknown): value is { version: number; sessions: unknown[] } {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const record = value as Record<string, unknown>;
+  if (record.version !== 1) throw new Error('Unsupported backup version. Only version 1 backups are supported.');
+  return Array.isArray(record.sessions);
+}
+
+function normaliseImportedSession(value: unknown, index: number): TeachingSession {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error(`Session ${index + 1} is not a valid record.`);
+  const session = value as Partial<TeachingSession>;
+  const requiredStrings: Array<keyof TeachingSession> = ['id', 'title', 'date', 'audience', 'topic', 'setting', 'createdAt', 'updatedAt'];
+  for (const key of requiredStrings) {
+    if (typeof session[key] !== 'string' || !session[key].trim()) throw new Error(`Session ${index + 1} is missing ${key}.`);
+  }
+  if (!hasValidIsoDate(session.date!)) throw new Error(`Session ${index + 1} has an invalid date.`);
+  if (!Number.isFinite(session.durationMinutes) || session.durationMinutes! <= 0) throw new Error(`Session ${index + 1} has an invalid duration.`);
+  if (!Array.isArray(session.objectives) || !session.objectives.every(isValidObjective)) throw new Error(`Session ${index + 1} has invalid objectives.`);
+  if (!Array.isArray(session.feedbackResponses) || !session.feedbackResponses.every(isValidFeedbackResponse)) throw new Error(`Session ${index + 1} has invalid feedback responses.`);
+  if (session.reflection && !isValidReflection(session.reflection)) throw new Error(`Session ${index + 1} has an invalid reflection.`);
+
+  return {
+    ...session,
+    level: typeof session.level === 'string' ? session.level : 'Mixed',
+    frameworkTags: Array.isArray(session.frameworkTags) ? session.frameworkTags : [DEFAULT_FRAMEWORK_TAG],
+    feedbackQuestions: Array.isArray(session.feedbackQuestions) ? session.feedbackQuestions : generateFeedbackQuestions(session.objectives),
+    rigour: session.rigour ?? { enabled: false, utility: { validity: 3, reliability: 3, educationalImpact: 3, acceptability: 4, cost: 4 }, equityPrompt: '' },
+    reflection: session.reflection ?? emptyGibbsReflection(session.title!),
+    evidenceNotes: typeof session.evidenceNotes === 'string' ? session.evidenceNotes : '',
+  } as TeachingSession;
+}
+
+function isValidObjective(value: unknown): value is Objective {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const item = value as Record<string, unknown>;
+  return ['id', 'text', 'bloom', 'activity', 'assessment'].every((key) => typeof item[key] === 'string')
+    && Array.isArray(item.evidence) && item.evidence.every((evidence) => typeof evidence === 'string')
+    && Array.isArray(item.frameworkTags) && item.frameworkTags.every((tag) => typeof tag === 'string');
+}
+
+function isValidFeedbackResponse(value: unknown): value is FeedbackResponse {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const scoreFields = new Set(['clarity', 'usefulness', 'preConfidence', 'postConfidence']);
+  const textFields = new Set(['freeText', 'peerObservation']);
+  return Object.entries(value as Record<string, unknown>).every(([key, entry]) => {
+    if (scoreFields.has(key)) return typeof entry === 'number' && Number.isFinite(entry) && entry >= 1 && entry <= 5;
+    if (textFields.has(key)) return typeof entry === 'string';
+    return typeof entry === 'string' || (typeof entry === 'number' && Number.isFinite(entry));
+  });
+}
+
+function isValidReflection(value: unknown): value is ReflectionDraft {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const reflection = value as Record<string, unknown>;
+  if (reflection.model !== 'Gibbs' || typeof reflection.forwardEvaluationMeasure !== 'string' || !reflection.sections || typeof reflection.sections !== 'object') return false;
+  const sections = reflection.sections as Record<string, unknown>;
+  return ['description', 'feelings', 'evaluation', 'analysis', 'conclusion', 'actionPlan'].every((key) => typeof sections[key] === 'string');
 }

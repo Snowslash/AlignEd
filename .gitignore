@@ -49,7 +49,14 @@ Thumbs.db
 *.sln
 *.sw?
 
-# Local agent/project instructions, not public user docs
+# Local agent/project instructions and planning artefacts, not public user docs
 AGENTS.md
 SPEC.md
 .hermes/
+docs/workflow/
+docs/plans/
+docs/shared-visual-language.md
+docs/*handoff*.md
+review-artifacts/
+screenshots/
+artifacts/
