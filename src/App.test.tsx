@@ -31,7 +31,11 @@ describe('App', () => {
     render(<App />);
     const navigation = screen.getByRole('navigation', { name: 'Primary navigation' });
     expect(navigation).toBeVisible();
-    expect(navigation.closest('header')).toHaveAttribute('data-print-hidden');
+    const estateHeader = navigation.closest('header');
+    expect(estateHeader).toHaveAttribute('data-print-hidden');
+    expect(estateHeader?.parentElement).toHaveClass('min-h-screen');
+    expect(estateHeader?.parentElement).not.toHaveClass('px-4', 'max-w-[1480px]');
+    expect(estateHeader?.nextElementSibling?.tagName).toBe('MAIN');
     expect(screen.getByRole('link', { name: 'Sangeev' })).toHaveAttribute('href', 'https://sangeev.me');
     expect(screen.getByRole('link', { name: 'Tools' })).toHaveAttribute('href', 'https://sangeev.me/#tools');
     expect(screen.getByRole('link', { name: 'AlignEd' })).toHaveAttribute('aria-current', 'page');

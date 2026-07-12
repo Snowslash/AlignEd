@@ -203,7 +203,7 @@ export default function App() {
   };
 
   return (
-    <div className="mx-auto min-h-screen max-w-[1480px] px-4 py-5 sm:px-6 lg:px-8">
+    <div className="min-h-screen">
       <PublicEstateHeader
         current="aligned"
         theme={theme}
@@ -212,7 +212,7 @@ export default function App() {
           setTheme(applyTheme(nextTheme));
         }}
       />
-      <main>
+      <main className="mx-auto max-w-[1480px] px-4 py-5 sm:px-6 lg:px-8">
       <header className="flex flex-wrap items-start justify-between gap-4 border-b border-border pb-5 pt-6" data-app-header data-print-hidden>
         <div>
           <h1 className="font-heading text-3xl font-semibold tracking-tight sm:text-4xl">AlignEd</h1>
