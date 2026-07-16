@@ -118,6 +118,13 @@ export const DEFAULT_FRAMEWORK_TAG = 'Generic teaching evidence';
 
 const unmeasurableVerbs = ['understand', 'know', 'appreciate', 'learn', 'be aware of'];
 
+const londonDateFormatter = new Intl.DateTimeFormat('en-GB', {
+  timeZone: 'Europe/London',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+});
+
 export function makeId(prefix = 'session'): string {
   const cryptoObj = globalThis.crypto;
   if (cryptoObj && 'randomUUID' in cryptoObj) {
@@ -146,12 +153,7 @@ export function parseUkDate(displayDate: string): string {
 }
 
 export function todayIso(): string {
-  const parts = new Intl.DateTimeFormat('en-GB', {
-    timeZone: 'Europe/London',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).formatToParts(new Date());
+  const parts = londonDateFormatter.formatToParts(new Date());
   const part = (type: string) => parts.find((item) => item.type === type)?.value ?? '';
   return `${part('year')}-${part('month')}-${part('day')}`;
 }
@@ -472,10 +474,6 @@ export function buildMarkdownExport(session: TeachingSession, feedback = buildFe
     '\n## Evidence notes',
     `\n## Forward evaluation measure\n\n${forwardEvaluationMeasure}\n\n## Evidence notes`,
   );
-}
-
-export function buildCsvTemplate(): string {
-  return 'clarity,usefulness,pre_confidence,post_confidence,one_change,peer_observation\n5,5,2,4,"Keep the skills practice","Clear observed teaching"';
 }
 
 export function buildDemoSession(): TeachingSession {
