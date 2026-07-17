@@ -30,8 +30,8 @@ describe('shared visual language contract', () => {
     expect(landing).toContain('<PublicEstateHeader current="aligned"');
     expect(landing).toContain('<EstateShell variant="landing">');
     expect(landing).toContain('href="./app/"');
-    expect(landing).toContain('className="estate-primary-action" href="https://github.com/Snowslash/AlignEd"');
-    expect(landing).toContain('Source on GitHub');
+    expect(landing).toContain('className="estate-primary-action estate-icon-action" href="https://github.com/Snowslash/AlignEd" aria-label="Source on GitHub" title="Source on GitHub"><GitHubMark');
+    expect(landing).not.toContain('<Code');
     expect(landing).toContain('Do not enter patient-identifiable information');
     expect(landing).toContain('stored only in this browser');
     expect(landing).toContain('alt="AlignEd showing two routes for completed or planned teaching');

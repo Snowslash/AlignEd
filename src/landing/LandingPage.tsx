@@ -1,7 +1,8 @@
-import { ArrowLeft, ArrowUpRight, Code } from 'lucide-react';
+import { ArrowLeft, ArrowUpRight } from 'lucide-react';
 import {
   EstateBoundary,
   EstateEvidenceFrame,
+  GitHubMark,
   EstatePageTitle,
   EstateSectionTitle,
   EstateShell,
@@ -34,7 +35,7 @@ export default function LandingPage() {
               </p>
               <div className="hero-actions">
                 <a className="estate-primary-action" href="./app/">Open AlignEd <ArrowUpRight size={17} aria-hidden="true" /></a>
-                <a className="estate-primary-action" href="https://github.com/Snowslash/AlignEd"><Code size={17} aria-hidden="true" /> Source on GitHub</a>
+                <a className="estate-primary-action estate-icon-action" href="https://github.com/Snowslash/AlignEd" aria-label="Source on GitHub" title="Source on GitHub"><GitHubMark size={18} /></a>
               </div>
             </div>
 

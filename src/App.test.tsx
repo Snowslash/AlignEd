@@ -20,11 +20,11 @@ describe('App', () => {
 
   it('uses the shared estate theme control markup', async () => {
     render(<App />);
-    const toggle = screen.getByRole('button', { name: 'Switch to dark mode' });
+    const toggle = screen.getByRole('button', { name: 'Switch to light mode' });
     expect(toggle).toHaveClass('estate-theme-toggle');
     expect(toggle.querySelector('svg')).not.toBeNull();
     await userEvent.click(toggle);
-    expect(screen.getByRole('button', { name: 'Switch to light mode' })).toHaveTextContent('Light');
+    expect(screen.getByRole('button', { name: 'Switch to dark mode' })).toHaveTextContent('Dark');
   });
 
   it('uses the shared public-estate header on the hosted app', () => {
@@ -36,7 +36,7 @@ describe('App', () => {
     expect(estateHeader?.parentElement).toHaveClass('min-h-screen');
     expect(estateHeader?.parentElement).not.toHaveClass('px-4', 'max-w-[1480px]');
     expect(estateHeader?.nextElementSibling?.tagName).toBe('MAIN');
-    expect(screen.getByRole('link', { name: 'Sangeev' })).toHaveAttribute('href', 'https://sangeev.me');
+    expect(screen.getByRole('link', { name: 'Sangeev.me' })).toHaveAttribute('href', 'https://sangeev.me');
     expect(screen.getByRole('link', { name: 'Projects' })).toHaveAttribute('href', 'https://sangeev.me/#projects');
     expect(screen.getByRole('link', { name: 'AlignEd' })).toHaveAttribute('aria-current', 'page');
     expect(screen.getByRole('link', { name: 'Op notes' })).toBeVisible();

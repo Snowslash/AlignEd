@@ -97,7 +97,7 @@ export function ExportStage({ session, onChange }: SessionStageProps) {
           <div className="grid gap-2" data-print-hidden>
             <Label htmlFor="export-evidence-notes">Evidence notes / artefact locations</Label>
             <p className="text-sm text-muted-foreground">These location notes remain editable here. Edit Gibbs reflection in Reflect.</p>
-            <textarea className="min-h-24 w-full rounded-lg border border-input bg-transparent px-2.5 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30" id="export-evidence-notes" onChange={(event) => onChange({ ...session, evidenceNotes: event.target.value })} placeholder="Attendance sheet, certificate, screenshot, observed-teaching note, or local file path." value={session.evidenceNotes} />
+            <textarea className="min-h-24 w-full rounded-lg border border-input bg-transparent px-2.5 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground dark:bg-input/30" id="export-evidence-notes" onChange={(event) => onChange({ ...session, evidenceNotes: event.target.value })} placeholder="Attendance sheet, certificate, screenshot, observed-teaching note, or local file path." value={session.evidenceNotes} />
           </div>
 
           <details open className="rounded-lg border border-border bg-muted/20 p-4">

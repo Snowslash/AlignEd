@@ -19,8 +19,8 @@ const bloomLevels: BloomLevel[] = ['Remember', 'Understand', 'Apply', 'Analyse',
 const millerLevels: MillerLevel[] = ['Knows', 'Knows how', 'Shows how', 'Does'];
 const evidenceTypes: EvidenceType[] = ['Attendance', 'Feedback', 'Reflection', 'Certificate', 'Photo/artefact'];
 const dreyfusStages: DreyfusStage[] = ['Novice', 'Advanced beginner', 'Competent', 'Proficient', 'Expert'];
-const selectClassName = 'h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30';
-const textareaClassName = 'min-h-24 w-full rounded-lg border border-input bg-transparent px-2.5 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30';
+const selectClassName = 'h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none transition-colors disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30';
+const textareaClassName = 'min-h-24 w-full rounded-lg border border-input bg-transparent px-2.5 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30';
 
 export function PlanStage({ session, onChange }: SessionStageProps) {
   const [advancedOpen, setAdvancedOpen] = useState(false);

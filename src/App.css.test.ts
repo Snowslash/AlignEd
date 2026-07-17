@@ -1,18 +1,29 @@
 /// <reference types="node" />
 
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 const appCss = readFileSync(path.join(process.cwd(), 'src/App.css'), 'utf8');
 const contractCss = readFileSync(path.join(process.cwd(), 'node_modules/@sangeev/estate-ui/src/contract.css'), 'utf8');
 
+function readSourceTree(root: string): string {
+  return readdirSync(root, { withFileTypes: true }).flatMap((entry) => {
+    const target = path.join(root, entry.name);
+    if (entry.isDirectory()) return [readSourceTree(target)];
+    return /\.(?:ts|tsx)$/.test(entry.name) ? [readFileSync(target, 'utf8')] : [];
+  }).join('\n');
+}
+
+const sourceTree = readSourceTree(path.join(process.cwd(), 'src'));
+
 describe('keyboard focus styling', () => {
   it('inherits the unlayered visible focus fallback from the versioned estate contract', () => {
     expect(contractCss).toMatch(
-      /:focus-visible\s*\{[^}]*outline:\s*(?!0|none)[^;]+;[^}]*outline-offset:\s*(?!0)[^;]+;/s,
+      /:focus-visible\s*\{[^}]*outline:\s*2px solid var\(--estate-focus\);[^}]*outline-offset:\s*2px;[^}]*box-shadow:\s*none;/s,
     );
     expect(appCss).not.toMatch(/:focus-visible/);
+    expect(sourceTree).not.toMatch(/focus-visible:(?:ring|border-ring)/);
   });
 });
 
