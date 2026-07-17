@@ -4,6 +4,10 @@ A small browser app for planning teaching, capturing feedback and turning a taug
 
 It is designed for clinicians who need to capture the essentials after teaching: what was taught, who attended, the intended objectives, feedback, reflection and evidence locations.
 
+Live project page: https://aligned.sangeev.me
+
+Live app: https://aligned.sangeev.me/app/
+
 ## What it does
 
 - Logs a taught session quickly.
@@ -67,6 +71,8 @@ Then open the local URL printed by Vite. It is usually:
 http://127.0.0.1:5173/
 ```
 
+The root is the public project page. Open `http://127.0.0.1:5173/app/` for the tracker.
+
 ## Build and verify
 
 Run the full project check:
@@ -98,9 +104,9 @@ The JSON backup is for app data. The Markdown export is for your portfolio evide
 
 ## Project status
 
-This is an early local-first tool. It is suitable for testing the teaching-evidence workflow locally. It is not a hosted multi-user service.
+This is an early local-first tool published as a static browser app. It is not a multi-user service and has no accounts, backend, sharing or cloud sync.
 
-Before publishing a public hosted version, add a real feedback collection route, clear privacy wording and a deployment-specific review of data handling.
+The public host does not change the storage boundary: session data remains in the current browser. A future phone-feedback route would require a separate privacy and data-handling review before release.
 
 ## Licence
 

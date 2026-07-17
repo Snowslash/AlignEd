@@ -14,6 +14,8 @@ describe('production deployment contract', () => {
     const vite = readFileSync('vite.config.ts', 'utf8');
 
     expect(vite).toContain("base: './'");
+    expect(vite).toContain("landing: path.resolve(__dirname, './index.html')");
+    expect(vite).toContain("app: path.resolve(__dirname, './app/index.html')");
   });
 
   it('ships restrictive Cloudflare Pages security headers', () => {
