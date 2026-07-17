@@ -5,12 +5,14 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 const appCss = readFileSync(path.join(process.cwd(), 'src/App.css'), 'utf8');
+const contractCss = readFileSync(path.join(process.cwd(), 'node_modules/@sangeev/estate-ui/src/contract.css'), 'utf8');
 
 describe('keyboard focus styling', () => {
-  it('provides an unlayered visible focus fallback for every button', () => {
-    expect(appCss).toMatch(
-      /button:focus-visible\s*\{[^}]*outline:\s*(?!0|none)[^;]+;[^}]*outline-offset:\s*(?!0)[^;]+;/s,
+  it('inherits the unlayered visible focus fallback from the versioned estate contract', () => {
+    expect(contractCss).toMatch(
+      /:focus-visible\s*\{[^}]*outline:\s*(?!0|none)[^;]+;[^}]*outline-offset:\s*(?!0)[^;]+;/s,
     );
+    expect(appCss).not.toMatch(/:focus-visible/);
   });
 });
 

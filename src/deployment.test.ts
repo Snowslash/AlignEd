@@ -2,6 +2,14 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 describe('production deployment contract', () => {
+  it('ships the canonical licences for the self-hosted estate fonts', () => {
+    for (const license of ['OFL-Atkinson-Hyperlegible-Next.txt', 'OFL-Literata.txt']) {
+      expect(readFileSync(`public/licenses/${license}`, 'utf8')).toBe(
+        readFileSync(`node_modules/@sangeev/estate-ui/LICENSES/${license}`, 'utf8'),
+      );
+    }
+  });
+
   it('emits portable relative asset URLs for embedded static previews', () => {
     const vite = readFileSync('vite.config.ts', 'utf8');
 

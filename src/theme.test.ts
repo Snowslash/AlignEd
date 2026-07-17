@@ -1,5 +1,10 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { applyTheme, getAppliedTheme, initialiseTheme, THEME_STORAGE_KEY } from './theme';
+import {
+  applyEstateTheme as applyTheme,
+  ESTATE_THEME_STORAGE_KEY as THEME_STORAGE_KEY,
+  getAppliedEstateTheme as getAppliedTheme,
+  initialiseEstateTheme as initialiseTheme,
+} from '@sangeev/estate-ui';
 
 describe('theme contract', () => {
   afterEach(() => {

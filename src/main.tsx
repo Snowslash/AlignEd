@@ -1,10 +1,10 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { initialiseEstateTheme } from '@sangeev/estate-ui'
 import './index.css'
 import App from './App.tsx'
-import { initialiseTheme } from './theme'
 
-initialiseTheme()
+initialiseEstateTheme()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
