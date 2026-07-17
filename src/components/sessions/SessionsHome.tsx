@@ -1,4 +1,5 @@
 import { ArrowRight, CalendarPlus, FileText, Plus } from 'lucide-react';
+import { EstateBoundary } from '@sangeev/estate-ui';
 import { BackupRestorePanel } from '@/components/backup/BackupRestorePanel';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -39,11 +40,11 @@ export function SessionsHome({
         <p className="text-muted-foreground">Capture something that has already happened or prepare the evidence plan before you teach.</p>
       </div>
 
-      <aside className="max-w-4xl rounded-sm border border-border bg-muted/45 p-4 text-sm leading-6" aria-label="Privacy and local storage">
+      <EstateBoundary className="max-w-4xl text-sm leading-6" label="Privacy and local storage">
         <p className="font-semibold">Stored only in this browser</p>
-        <p className="mt-1 text-muted-foreground">Data is not uploaded or synced. Records remain on this device until deleted or browser data is cleared.</p>
-        <p className="mt-2 text-muted-foreground"><strong className="text-foreground">Do not enter patient-identifiable information.</strong> Avoid learner-identifiable information unless it is necessary. Download a JSON backup before clearing browser data or moving devices.</p>
-      </aside>
+        <p className="mt-1">Data is not uploaded or synced. Records remain on this device until deleted or browser data is cleared.</p>
+        <p className="mt-2"><strong>Do not enter patient-identifiable information.</strong> Avoid learner-identifiable information unless it is necessary. Download a JSON backup before clearing browser data or moving devices.</p>
+      </EstateBoundary>
 
       <div className="grid gap-4 md:grid-cols-2">
         <Card className="border-primary/35 bg-card shadow-none ring-0">

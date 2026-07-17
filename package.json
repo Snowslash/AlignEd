@@ -12,6 +12,7 @@
     "check": "npm run lint && npm run test && npm run build"
   },
   "dependencies": {
+    "@sangeev/estate-ui": "file:vendor/sangeev-estate-ui-2.0.0-alpha.2.tgz",
     "@tailwindcss/vite": "^4.3.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

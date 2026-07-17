@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react';
 import './App.css';
-import { PublicEstateHeader } from '@/components/PublicEstateHeader';
+import {
+  EstatePageTitle,
+  EstateShell,
+  PublicEstateHeader,
+  useEstateTheme,
+} from '@sangeev/estate-ui';
 import { DeleteDataConfirmation } from '@/components/backup/DeleteDataConfirmation';
 import { RestoreConfirmation } from '@/components/backup/RestoreConfirmation';
 import { SessionEntryPanel } from '@/components/sessions/SessionEntryPanel';
@@ -25,7 +30,7 @@ import {
   todayIso,
 } from './domain/core';
 import { getCaptureValidationErrors, getSuggestedResumeStage, type CaptureValidationErrors } from './domain/workflow';
-import { applyTheme, getAppliedTheme, type Theme } from './theme';
+
 
 const STORAGE_KEY = 'aligned.sessions.v1';
 const LEGACY_STORAGE_KEY = 'teaching-portfolio-tracker.sessions.v1';
@@ -108,7 +113,7 @@ export default function App() {
   const [backupImportFocusRequest, setBackupImportFocusRequest] = useState(0);
   const [persistenceStatus, setPersistenceStatus] = useState<'idle' | 'saved' | 'error'>('idle');
   const [currentStage, setCurrentStage] = useState<WorkspaceStageId>('capture');
-  const [theme, setTheme] = useState<Theme>(getAppliedTheme);
+  const { theme, toggleTheme } = useEstateTheme();
   const selected = sessions.find((session) => session.id === selectedId);
 
   useEffect(() => {
@@ -207,15 +212,12 @@ export default function App() {
       <PublicEstateHeader
         current="aligned"
         theme={theme}
-        onToggleTheme={() => {
-          const nextTheme: Theme = theme === 'dark' ? 'light' : 'dark';
-          setTheme(applyTheme(nextTheme));
-        }}
+        onToggleTheme={toggleTheme}
       />
-      <main className="mx-auto max-w-[1480px] px-4 py-5 sm:px-6 lg:px-8">
+      <EstateShell as="main" variant="wide-app" className="py-5">
       <header className="flex flex-wrap items-start justify-between gap-4 border-b border-border pb-5 pt-6" data-app-header data-print-hidden>
         <div>
-          <h1 className="font-heading text-3xl font-semibold tracking-tight sm:text-4xl">AlignEd</h1>
+          <EstatePageTitle variant="app">AlignEd</EstatePageTitle>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">Plan teaching, capture feedback and leave with a usable evidence pack.</p>
         </div>
         {persistenceStatus === 'error' && (
@@ -295,7 +297,7 @@ export default function App() {
           sessionCount={sessions.length}
         />
       )}
-      </main>
+      </EstateShell>
     </div>
   );
 }
