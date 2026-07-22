@@ -28,6 +28,17 @@ describe('production deployment contract', () => {
     expect(headers).toContain("Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'");
   });
 
+  it('publishes canonical crawler discovery files', () => {
+    const robots = readFileSync('public/robots.txt', 'utf8');
+    const sitemap = readFileSync('public/sitemap.xml', 'utf8');
+
+    expect(robots).toBe('User-agent: *\nAllow: /\n\nSitemap: https://aligned.sangeev.me/sitemap.xml\n');
+    expect(sitemap).toMatch(/^<\?xml version="1\.0" encoding="UTF-8"\?>/);
+    expect(sitemap).toContain('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">');
+    expect(sitemap).toContain('<loc>https://aligned.sangeev.me/</loc>');
+    expect(sitemap).not.toMatch(/<html\b/i);
+  });
+
   it('deploys the built static assets to the production custom domain with Wrangler', () => {
     const config = JSON.parse(readFileSync('wrangler.jsonc', 'utf8'));
 
