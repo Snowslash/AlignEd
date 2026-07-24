@@ -5,6 +5,7 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 const css = readFileSync(path.join(process.cwd(), 'src/index.css'), 'utf8');
+const landingCss = readFileSync(path.join(process.cwd(), 'src/landing/styles.css'), 'utf8');
 const app = readFileSync(path.join(process.cwd(), 'src/App.tsx'), 'utf8');
 const sessionsHome = readFileSync(path.join(process.cwd(), 'src/components/sessions/SessionsHome.tsx'), 'utf8');
 const buttons = readFileSync(path.join(process.cwd(), 'src/components/ui/button.tsx'), 'utf8');
@@ -55,6 +56,16 @@ describe('shared visual language contract', () => {
     expect(app).toContain('<EstatePageTitle variant="app">AlignEd</EstatePageTitle>');
     expect(sessionsHome).toContain("import { EstateBoundary } from '@sangeev/estate-ui'");
     expect(sessionsHome).toContain('<EstateBoundary className="max-w-4xl text-sm leading-6" label="Privacy and local storage">');
+  });
+
+  it('keeps headings and landing-link hover states contrast-safe', () => {
+    expect(css).toMatch(/h1,\s*h2,\s*h3\s*\{\s*color:\s*var\(--foreground\);/);
+    expect(landingCss).not.toContain('.back-link:hover { color: var(--accent); }');
+    expect(landingCss).not.toContain('.status-band > a:hover { color: var(--accent); }');
+    expect(landingCss).not.toContain('footer a:hover { color: var(--accent); }');
+    expect(landingCss).toContain('.back-link:hover { text-decoration-line: underline; }');
+    expect(landingCss).toContain('.status-band > a:hover { text-decoration-line: underline; }');
+    expect(landingCss).toContain('footer a:hover { text-decoration-line: underline; }');
   });
 
   it('keeps square controls and cards', () => {

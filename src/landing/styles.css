@@ -39,7 +39,7 @@ h1, h2, h3 { color: var(--text-strong); font-family: var(--font-serif); letter-s
   font-size: 13px;
   text-decoration: none;
 }
-.back-link:hover { color: var(--accent); }
+.back-link:hover { text-decoration-line: underline; }
 .hero-copy > .estate-page-title { margin-bottom: 12px; }
 .project-summary {
   max-width: 28ch;
@@ -115,12 +115,12 @@ h1, h2, h3 { color: var(--text-strong); font-family: var(--font-serif); letter-s
   white-space: nowrap;
   text-decoration: none;
 }
-.status-band > a:hover { color: var(--accent); }
+.status-band > a:hover { text-decoration-line: underline; }
 
 footer { display: flex; justify-content: space-between; gap: 24px; padding: 22px 0 42px; color: var(--text-muted); font-size: 13px; }
 footer p { margin: 0; }
 footer a { text-decoration: none; }
-footer a:hover { color: var(--accent); }
+footer a:hover { text-decoration-line: underline; }
 
 @media (max-width: 760px) {
   .hero { min-height: auto; grid-template-columns: 1fr; gap: 40px; padding: 44px 0; }
