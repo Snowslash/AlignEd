@@ -27,6 +27,14 @@ describe('keyboard focus styling', () => {
   });
 });
 
+describe('printed evidence preservation', () => {
+  it('wraps long authored paragraphs and unbroken artefact locations instead of clipping A4 output', () => {
+    const printPack = appCss.match(/\[data-print-evidence-pack\][^{]*\{([^}]*)\}/s)?.[1] ?? '';
+    expect(printPack).toMatch(/white-space:\s*pre-wrap\s*!important/);
+    expect(printPack).toMatch(/overflow-wrap:\s*anywhere\s*!important/);
+  });
+});
+
 describe('legacy CSS retirement', () => {
   it('does not retain global legacy component rules or migrated class selectors', () => {
     expect(appCss).not.toMatch(/--legacy-|\.workspace\b|\.summary-grid\b|\.panel\b|\.stepper\b/);

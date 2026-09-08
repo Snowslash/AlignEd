@@ -6,6 +6,8 @@
   [data-print-evidence-pack] {
     max-height: none !important;
     overflow: visible !important;
+    white-space: pre-wrap !important;
+    overflow-wrap: anywhere !important;
     background: #fff !important;
     color: #000 !important;
     padding: 0 !important;
