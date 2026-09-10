@@ -113,10 +113,25 @@ describe('AlignEd domain', () => {
     expect(md).not.toContain('- Utility:');
     expect(md).toContain('## Advanced planning notes');
     expect(md).not.toContain('## Rigour Mode notes');
-    expect(md).toContain('Generic teaching evidence');
+    expect(md).not.toContain('Generic teaching evidence');
     expect(md).not.toContain('PGCert');
-    expect(md).toContain('## Forward evaluation measure');
+    expect(md).toContain('## How I will check next time');
     expect(md).toContain(reflection.forwardEvaluationMeasure);
+  });
+
+  it('exports legacy advanced sessions that omit optional planning notes', () => {
+    const [session] = deserialiseSessions(JSON.stringify([{ ...buildDemoSession(), rigour: { enabled: true } }]));
+    const markdown = buildMarkdownExport(session, undefined, session.reflection);
+    expect(markdown).toContain('## Advanced planning notes');
+    expect(markdown).not.toContain('Equity prompt:');
+  });
+
+  it('uses plain-language suggestions while preserving authored education terminology', () => {
+    const session = buildDemoSession();
+    session.reflection.sections.analysis = 'My authored analysis deliberately mentions Kirkpatrick.';
+    const suggestion = buildReflectionSuggestion(session, buildFeedbackSummary(session.feedbackResponses));
+    expect(suggestion.sections.analysis).not.toContain('Kirkpatrick');
+    expect(buildMarkdownExport(session, undefined, session.reflection)).toContain(session.reflection.sections.analysis);
   });
 
   it('exports an honest no-feedback evidence pack without fabricated averages or learner outcomes', () => {
@@ -135,7 +150,7 @@ describe('AlignEd domain', () => {
     expect(markdown).not.toContain('Average clarity: 0');
     expect(markdown).not.toContain('Average usefulness: 0');
     expect(markdown).not.toContain('## Kirkpatrick evaluation spine');
-    expect(markdown).toContain('## Forward evaluation measure');
+    expect(markdown).toContain('## How I will check next time');
     expect(markdown).toContain(session.reflection.forwardEvaluationMeasure);
   });
 

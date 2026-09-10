@@ -14,7 +14,7 @@ const reflectionFields: Array<{ field: ReflectionField; label: string }> = [
   { field: 'analysis', label: 'Analysis' },
   { field: 'conclusion', label: 'Conclusion' },
   { field: 'actionPlan', label: 'Action plan' },
-  { field: 'forwardEvaluationMeasure', label: 'Forward evaluation measure' },
+  { field: 'forwardEvaluationMeasure', label: 'How I will check next time' },
 ];
 
 const textareaClassName = 'min-h-28 w-full rounded-lg border border-input bg-transparent px-2.5 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground dark:bg-input/30';
@@ -52,7 +52,6 @@ export function ReflectStage({ session, onChange }: SessionStageProps) {
       <Card className="border-border bg-card shadow-none ring-0">
         <CardHeader>
           <CardTitle><h2 data-workspace-stage-heading="reflect" id="reflect-stage-title" tabIndex={-1}>Reflect</h2></CardTitle>
-          <CardDescription>Write a portfolio-usable Gibbs reflection. This remains your editable text whether or not learner feedback was collected.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
           {feedback.responseCount > 0 ? (

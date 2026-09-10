@@ -48,7 +48,7 @@ describe('Reflect stage', () => {
       Analysis: 'Authored analysis',
       Conclusion: 'Authored conclusion',
       'Action plan': 'Authored action plan',
-      'Forward evaluation measure': 'Authored forward measure',
+      'How I will check next time': 'Authored forward measure',
     };
 
     for (const [label, value] of Object.entries(values)) {
@@ -134,7 +134,7 @@ describe('Reflect stage', () => {
     await userEvent.click(screen.getByRole('button', { name: /^Reflect$/i }));
 
     expect(screen.getByRole('heading', { name: /^Reflect$/i })).toHaveFocus();
-    expect(screen.getByLabelText(/^Forward evaluation measure$/i)).toBeEnabled();
+    expect(screen.getByLabelText(/^How I will check next time$/i)).toBeEnabled();
     expect(screen.getByText(/No learner feedback is recorded/i)).toBeInTheDocument();
     expect(screen.queryByText(/learner response captured/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/generated suggestions are available/i)).not.toBeInTheDocument();

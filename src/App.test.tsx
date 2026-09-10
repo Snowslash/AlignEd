@@ -143,7 +143,7 @@ describe('App', () => {
     expect(await screen.findByRole('heading', { name: /^Plan$/i })).toHaveFocus();
     expect(screen.queryByRole('heading', { name: /^Capture$/i })).not.toBeInTheDocument();
 
-    const objectiveText = screen.getByLabelText(/Objective text/i);
+    const objectiveText = screen.getByLabelText(/Learning objective/i);
     await userEvent.clear(objectiveText);
     await userEvent.type(objectiveText, 'Explain the initial management of compartment syndrome');
 
@@ -232,14 +232,14 @@ describe('App', () => {
     expect(screen.getAllByText(new RegExp(formatUkDate(todayIso()).replace(/\//g, '\\/'))).length).toBeGreaterThan(0);
     await userEvent.click(screen.getByRole('button', { name: /^Plan$/i }));
     expect(screen.queryByLabelText(/^Check$/i)).not.toBeInTheDocument();
-    expect(screen.getByLabelText(/^Assessment$/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^Check for learning$/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/^Activity$/i).tagName).toBe('INPUT');
-    expect(screen.getByLabelText(/^Assessment$/i).tagName).toBe('INPUT');
+    expect(screen.getByLabelText(/^Check for learning$/i).tagName).toBe('INPUT');
     expect(screen.queryByText(/Miller level not set/i)).not.toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: /Advanced mode/i })).not.toBeInTheDocument();
     expect(screen.getByLabelText(/Advanced mode/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Objective text/i)).toHaveValue('By the end of this session, ...');
-    expect(screen.getByText(/These ticks are the evidence types/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Learning objective/i)).toHaveValue('By the end of this session, ...');
+    expect(screen.queryByText(/These ticks are the evidence types/i)).not.toBeInTheDocument();
     expect(screen.getByText(/Evidence to attach/i)).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: /^Reflect$/i }));
@@ -253,15 +253,18 @@ describe('App', () => {
   });
 
   it('keeps Plan readiness fields together while advanced prompts remain optional', async () => {
+    const session = buildDemoSession();
+    session.rigour.enabled = false;
+    localStorage.setItem('aligned.sessions.v1', serialiseSessions([session]));
     render(<App />);
-    await userEvent.click(screen.getByRole('button', { name: /Add demo data/i }));
+    await userEvent.click(screen.getByRole('button', { name: new RegExp(session.title, 'i') }));
     await userEvent.click(screen.getByRole('button', { name: /^Plan$/i }));
 
     expect(await screen.findByRole('heading', { name: /^Plan$/i })).toHaveFocus();
-    expect(screen.getAllByLabelText(/^Objective text$/i)).toHaveLength(2);
-    expect(screen.getAllByLabelText(/^Bloom level$/i)).toHaveLength(2);
+    expect(screen.getAllByLabelText(/^Learning objective$/i)).toHaveLength(2);
+    expect(screen.queryByLabelText(/^Bloom level$/i)).not.toBeInTheDocument();
     expect(screen.getAllByLabelText(/^Activity$/i)).toHaveLength(2);
-    expect(screen.getAllByLabelText(/^Assessment$/i)).toHaveLength(2);
+    expect(screen.getAllByLabelText(/^Check for learning$/i)).toHaveLength(2);
     expect(screen.getAllByText(/^Intended evidence to attach$/i)).toHaveLength(2);
     expect(screen.getAllByRole('checkbox', { name: /Feedback/i })).toHaveLength(2);
     expect(screen.queryByLabelText(/^Miller level$/i)).not.toBeInTheDocument();
@@ -274,18 +277,23 @@ describe('App', () => {
     expect(advancedMode).toHaveAttribute('aria-expanded', 'false');
     await userEvent.click(advancedMode);
     expect(advancedMode).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getAllByLabelText(/^Bloom level$/i)).toHaveLength(2);
     expect(screen.getAllByLabelText(/^Miller level$/i)).toHaveLength(2);
     expect(screen.getAllByLabelText(/^Dreyfus learner stage$/i)).toHaveLength(2);
     expect(screen.getAllByLabelText(/^Observed standard$/i)).toHaveLength(2);
     expect(screen.getByLabelText(/^Equity prompt$/i)).toBeInTheDocument();
     expect(screen.getByText(/^Dose check:/i)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: /^Export$/i }));
+    await userEvent.click(screen.getByRole('button', { name: /^Plan$/i }));
+    expect(screen.getByRole('button', { name: /^Advanced mode$/i })).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getAllByLabelText(/^Bloom level$/i)).toHaveLength(2);
   });
 
   it('regenerates feedback questions from edited Plan objectives', async () => {
     render(<App />);
     await userEvent.click(screen.getByRole('button', { name: /Add demo data/i }));
     await userEvent.click(screen.getByRole('button', { name: /^Plan$/i }));
-    const objectiveText = screen.getAllByLabelText(/^Objective text$/i)[0];
+    const objectiveText = screen.getAllByLabelText(/^Learning objective$/i)[0];
 
     await userEvent.clear(objectiveText);
     await userEvent.type(objectiveText, 'Demonstrate safe plaster application');
@@ -715,7 +723,7 @@ describe('App', () => {
     expect(screen.getByRole('button', { name: /Print or save PDF/i })).toBeEnabled();
     expect(screen.getByTestId('markdown-preview')).toHaveTextContent('I will allow more supervised hands-on practice.');
     expect(screen.getByTestId('markdown-preview')).toHaveTextContent('Attendance sheet stored in portfolio folder.');
-    expect(screen.getByTestId('markdown-preview')).toHaveTextContent('Forward evaluation measure');
+    expect(screen.getByTestId('markdown-preview')).toHaveTextContent('How I will check next time');
     expect(screen.getByTestId('markdown-preview')).toHaveTextContent('Observe two learners completing supervised sutures next week.');
     expect(screen.getByTestId('markdown-preview')).toHaveTextContent('No learner feedback was recorded.');
     expect(screen.getByTestId('markdown-preview')).not.toHaveTextContent('Average clarity: 0');

@@ -132,7 +132,6 @@ export function FeedbackStage({ session, onChange }: SessionStageProps) {
       <Card className="border-border bg-card shadow-none ring-0">
         <CardHeader>
           <CardTitle><h2 data-workspace-stage-heading="feedback" id="feedback-stage-title" tabIndex={-1}>Feedback capture</h2></CardTitle>
-          <CardDescription>Record responses manually first, then use CSV only when you already have spreadsheet data.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
           <p className="rounded-lg border border-border bg-muted/30 p-3 text-sm text-muted-foreground">This browser-only app does not collect phone responses by QR. Ask learners verbally or on paper, then record each response here.</p>
@@ -141,7 +140,6 @@ export function FeedbackStage({ session, onChange }: SessionStageProps) {
             <Card className="border-border bg-muted/20 shadow-none ring-0" size="sm">
               <CardHeader>
                 <CardTitle>Learner questions</CardTitle>
-                <CardDescription>Use these prompts during or after the session.</CardDescription>
               </CardHeader>
               <CardContent>
                 <ol className="list-decimal space-y-2 pl-5 text-sm">
@@ -229,12 +227,12 @@ export function FeedbackStage({ session, onChange }: SessionStageProps) {
             <span><strong>{feedback.averageConfidenceGain ?? '—'}</strong> confidence change</span>
           </div>
           <div className="space-y-2">
-            <h3 className="font-heading text-base font-medium">Kirkpatrick spine</h3>
+            <h3 className="font-heading text-base font-medium">What the feedback shows</h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><strong className="text-foreground">Reaction:</strong> {feedback.kirkpatrick.reaction}</li>
-              <li><strong className="text-foreground">Learning:</strong> {feedback.kirkpatrick.learning}</li>
-              <li><strong className="text-foreground">Behaviour:</strong> {feedback.kirkpatrick.behaviour}</li>
-              <li><strong className="text-foreground">Results:</strong> {feedback.kirkpatrick.results}</li>
+              <li><strong className="text-foreground">Learner feedback:</strong> {feedback.kirkpatrick.reaction}</li>
+              <li><strong className="text-foreground">Learning evidence:</strong> {feedback.kirkpatrick.learning}</li>
+              <li><strong className="text-foreground">Changes in practice:</strong> {feedback.kirkpatrick.behaviour}</li>
+              <li><strong className="text-foreground">Wider outcomes:</strong> {feedback.kirkpatrick.results}</li>
             </ul>
           </div>
         </CardContent>

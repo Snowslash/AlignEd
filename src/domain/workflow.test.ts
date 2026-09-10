@@ -34,7 +34,7 @@ describe('workflow selectors', () => {
       text: 'Explain the initial management of compartment syndrome',
     };
 
-    expect(getPlanningState({ ...session, objectives: [{ ...objective, bloom: '' as never }] })).toBe('in_progress');
+    expect(getPlanningState({ ...session, objectives: [{ ...objective, bloom: '' as never }] })).toBe('ready');
     expect(getPlanningState({ ...session, objectives: [{ ...objective, activity: '' }] })).toBe('in_progress');
     expect(getPlanningState({ ...session, objectives: [{ ...objective, assessment: '' }] })).toBe('in_progress');
     expect(getPlanningState({ ...session, objectives: [{ ...objective, evidence: [] }] })).toBe('in_progress');

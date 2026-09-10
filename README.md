@@ -11,7 +11,7 @@ Live app: https://aligned.sangeev.me/app/
 ## What it does
 
 - Logs a taught session quickly.
-- Helps write simple learning objectives.
+- Helps write simple learning objectives. Bloom and Miller classifications are optional in Advanced mode; they do not gate readiness.
 - Tracks the evidence you plan to attach: attendance, feedback, reflection, certificate or photo/artefact.
 - Captures learner feedback manually or by CSV import.
 - Summarises feedback using clarity, usefulness and pre/post confidence.
@@ -100,7 +100,7 @@ Inside the app:
 - Use the distinct **Reflect** stage to write and revise the Gibbs reflection.
 - Use **Copy Markdown**, **Download Markdown** or **Print or save PDF** in the **Export** stage to save an evidence pack for one session.
 
-The JSON backup is for app data. The Markdown export is for your portfolio evidence record.
+The JSON backup is for app data. The Markdown export is for your portfolio evidence record. Legacy framework tags remain in saved sessions and JSON backups but are no longer shown in the editor or evidence pack. Advanced planning metadata is included in the pack only while Advanced mode is enabled; turning it off does not delete saved values or rewrite authored reflections.
 
 ## Project status
 

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { buildFeedbackSummary, buildMarkdownExport } from '@/domain/core';
 import { getExportWarnings } from '@/domain/workflow';
@@ -67,7 +67,6 @@ export function ExportStage({ session, onChange }: SessionStageProps) {
       <Card className="border-border bg-card shadow-none ring-0">
         <CardHeader>
           <CardTitle><h2 data-workspace-stage-heading="export" id="export-stage-title" tabIndex={-1}>Export</h2></CardTitle>
-          <CardDescription>Review the evidence pack and produce a Markdown or browser-printable copy. Gibbs reflection editing remains in Reflect.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
           <section aria-label="Export omissions" className="rounded-lg border border-border bg-muted/30 p-4">
@@ -96,7 +95,6 @@ export function ExportStage({ session, onChange }: SessionStageProps) {
 
           <div className="grid gap-2" data-print-hidden>
             <Label htmlFor="export-evidence-notes">Evidence notes / artefact locations</Label>
-            <p className="text-sm text-muted-foreground">These location notes remain editable here. Edit Gibbs reflection in Reflect.</p>
             <textarea className="min-h-24 w-full rounded-lg border border-input bg-transparent px-2.5 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground dark:bg-input/30" id="export-evidence-notes" onChange={(event) => onChange({ ...session, evidenceNotes: event.target.value })} placeholder="Attendance sheet, certificate, screenshot, observed-teaching note, or local file path." value={session.evidenceNotes} />
           </div>
 

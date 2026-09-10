@@ -1,4 +1,4 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { checkDose, formatUkDate, parseUkDate, type TeachingSession } from '@/domain/core';
@@ -30,7 +30,6 @@ export function CaptureStage({ session, onChange }: SessionStageProps) {
       <Card className="border-border bg-card shadow-none ring-0">
         <CardHeader>
           <CardTitle><h2 data-workspace-stage-heading="capture" id="capture-stage-title" tabIndex={-1}>Capture</h2></CardTitle>
-          <CardDescription>Record the factual session details. You can plan objectives, feedback, reflection and export later.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           <div className="grid gap-2 lg:col-span-2">
@@ -65,10 +64,6 @@ export function CaptureStage({ session, onChange }: SessionStageProps) {
             <Label htmlFor="capture-setting">Setting</Label>
             <Input aria-describedby={errors.setting ? 'capture-setting-error' : undefined} aria-invalid={Boolean(errors.setting)} id="capture-setting" value={session.setting} onChange={(event) => patch({ setting: event.target.value })} />
             <FieldError id="capture-setting-error" message={errors.setting} />
-          </div>
-          <div className="grid gap-2 sm:col-span-2 lg:col-span-4">
-            <Label htmlFor="capture-framework-tags">Framework tags</Label>
-            <Input id="capture-framework-tags" value={session.frameworkTags.join(', ')} onChange={(event) => patch({ frameworkTags: event.target.value.split(',').map((tag) => tag.trim()).filter(Boolean) })} />
           </div>
         </CardContent>
       </Card>

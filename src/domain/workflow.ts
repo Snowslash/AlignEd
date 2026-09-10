@@ -45,7 +45,6 @@ function isMeaningfulObjective(objective: Objective): boolean {
 
 function isReadyObjective(objective: Objective): boolean {
   return isMeaningfulObjective(objective)
-    && Boolean(objective.bloom?.trim())
     && Boolean(objective.activity.trim())
     && Boolean(objective.assessment.trim())
     && objective.evidence.length > 0;
