@@ -17,7 +17,7 @@ describe('plain teaching workflow', () => {
     expect(screen.queryByRole('heading', { name: /Kirkpatrick spine/i })).not.toBeInTheDocument();
     if (stage === 'Feedback') {
       expect(screen.getByText(/All scores are optional/)).toBeVisible();
-      expect(screen.getByText(/does not collect phone responses by QR/)).toBeVisible();
+      expect(screen.getByText(/Google stores submitted feedback/)).toBeVisible();
       expect(screen.getByRole('heading', { name: 'What the feedback shows' })).toBeVisible();
     }
     if (stage === 'Export') expect(screen.getByRole('region', { name: 'Export omissions' })).toBeVisible();

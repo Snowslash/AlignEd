@@ -287,7 +287,7 @@ const feedbackHeaderAliases: Record<string, keyof Pick<FeedbackResponse, 'clarit
   observed_teaching: 'peerObservation',
 };
 
-function parseCsvRows(csv: string): { rows: string[][] } | { error: string } {
+export function parseCsvRows(csv: string): { rows: string[][] } | { error: string } {
   const rows: string[][] = [];
   let cells: string[] = [];
   let cell = '';
@@ -344,6 +344,9 @@ export function previewFeedbackCsv(csv: string): FeedbackCsvPreview {
   if (parsed.rows.length === 0) return previewError('CSV needs a usable header row before it can be previewed.');
 
   const headers = parsed.rows[0].map(normaliseHeader);
+  if (headers.some((header) => /^session_(title|date):?$/.test(header))) {
+    return previewError('Use Google Forms CSV import to review the matching session before applying these responses.', headers);
+  }
   if (headers.some((header) => !header)) return previewError('CSV needs a usable header row with named columns.', headers);
   const duplicateHeader = headers.find((header, index) => headers.indexOf(header) !== index);
   if (duplicateHeader) return previewError(`CSV has duplicate header "${duplicateHeader}". Rename one column and preview again.`, headers);

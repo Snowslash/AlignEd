@@ -302,13 +302,13 @@ describe('App', () => {
     expect(screen.getByText('After this session, how confident do you feel with: Demonstrate safe plaster application?')).toBeInTheDocument();
   });
 
-  it('accumulates manual feedback, preserves cleared numeric fields, and has no QR collection route', async () => {
+  it('accumulates manual feedback and preserves cleared numeric fields without a configured form', async () => {
     render(<App />);
     await userEvent.click(screen.getByRole('button', { name: /Add demo data/i }));
     await userEvent.click(screen.getByRole('button', { name: /^Feedback$/i }));
 
     expect(screen.getByRole('heading', { name: /Feedback capture/i })).toHaveFocus();
-    expect(screen.getByText(/does not collect phone responses by QR/i)).toBeInTheDocument();
+    expect(screen.getByText(/Google stores submitted feedback/i)).toBeInTheDocument();
     expect(screen.queryByLabelText(/Feedback URL/i)).not.toBeInTheDocument();
     expect(screen.queryByAltText(/QR code/i)).not.toBeInTheDocument();
 

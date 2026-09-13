@@ -8,8 +8,10 @@ import {
   previewFeedbackCsv,
   type FeedbackCsvPreview,
   type FeedbackResponse,
+  type TeachingSession,
 } from '@/domain/core';
 import type { SessionStageProps } from './workspace-types';
+import { GoogleFeedbackPanel } from './GoogleFeedbackPanel';
 
 type FeedbackScoreField = 'clarity' | 'usefulness' | 'preConfidence' | 'postConfidence';
 type CsvImportMode = 'append' | 'replace';
@@ -52,7 +54,7 @@ function validateManualFeedback(manual: FeedbackResponse): { error?: string; res
   return { response };
 }
 
-export function FeedbackStage({ session, onChange }: SessionStageProps) {
+export function FeedbackStage({ session, onChange, sessions }: SessionStageProps & { sessions?: readonly TeachingSession[] }) {
   const [manual, setManual] = useState<FeedbackResponse>(emptyManualFeedback);
   const [manualError, setManualError] = useState<string>();
   const [csv, setCsv] = useState('');
@@ -134,7 +136,7 @@ export function FeedbackStage({ session, onChange }: SessionStageProps) {
           <CardTitle><h2 data-workspace-stage-heading="feedback" id="feedback-stage-title" tabIndex={-1}>Feedback capture</h2></CardTitle>
         </CardHeader>
         <CardContent className="space-y-5">
-          <p className="rounded-lg border border-border bg-muted/30 p-3 text-sm text-muted-foreground">This browser-only app does not collect phone responses by QR. Ask learners verbally or on paper, then record each response here.</p>
+          <GoogleFeedbackPanel key={session.id} session={session} sessions={sessions} onChange={onChange} />
 
           <div className="grid gap-5 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
             <Card className="border-border bg-muted/20 shadow-none ring-0" size="sm">

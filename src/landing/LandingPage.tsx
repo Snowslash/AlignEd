@@ -41,7 +41,7 @@ export default function LandingPage() {
 
             <EstateBoundary className="hero-boundary" label="Privacy and local storage boundary">
               <p><strong>Do not enter patient-identifiable information.</strong> Avoid learner-identifiable information unless it is necessary.</p>
-              <p>Sessions are stored only in this browser. There is no login, backend, cloud sync, analytics, messaging or AI.</p>
+              <p>Sessions are stored only in this browser. AlignEd has no login, backend, cloud sync, analytics, messaging or AI. Optional Google Forms feedback is collected and stored by Google, then imported locally by CSV.</p>
               <p>Download a JSON backup before clearing browser data or moving devices.</p>
             </EstateBoundary>
           </section>
@@ -74,7 +74,7 @@ export default function LandingPage() {
           <section className="status-band" aria-labelledby="status-title">
             <div>
               <EstateSectionTitle id="status-title">Personal tool. Browser-local by design.</EstateSectionTitle>
-              <p>AlignEd does not verify evidence, assess teaching quality, collect phone feedback by QR code or submit anything to a training portfolio.</p>
+              <p>AlignEd does not verify evidence, assess teaching quality or submit anything to a training portfolio. QR feedback links open your own Google Form; they do not upload your portfolio.</p>
             </div>
             <a href="https://github.com/Snowslash/AlignEd">Read the project notes <ArrowUpRight size={17} aria-hidden="true" /></a>
           </section>

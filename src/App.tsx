@@ -30,6 +30,7 @@ import {
   todayIso,
 } from './domain/core';
 import { getCaptureValidationErrors, getSuggestedResumeStage, type CaptureValidationErrors } from './domain/workflow';
+import { GOOGLE_FORM_STORAGE_KEY } from './domain/google-feedback';
 
 
 const STORAGE_KEY = 'aligned.sessions.v1';
@@ -200,6 +201,7 @@ export default function App() {
 
   const deleteAllLocalData = () => {
     localStorage.removeItem(LEGACY_STORAGE_KEY);
+    localStorage.removeItem(GOOGLE_FORM_STORAGE_KEY);
     setSessions([]);
     setSelectedId(undefined);
     setEntryMode(null);
@@ -273,7 +275,7 @@ export default function App() {
         >
           {currentStage === 'capture' && <CaptureStage session={selected} onChange={patchSelected} />}
           {currentStage === 'plan' && <PlanStage session={selected} onChange={patchSelected} />}
-          {currentStage === 'feedback' && <FeedbackStage session={selected} onChange={patchSelected} />}
+          {currentStage === 'feedback' && <FeedbackStage key={selected.id} session={selected} sessions={sessions} onChange={patchSelected} />}
           {currentStage === 'reflect' && <ReflectStage session={selected} onChange={patchSelected} />}
           {currentStage === 'export' && <ExportStage session={selected} onChange={patchSelected} />}
         </SessionWorkspace>

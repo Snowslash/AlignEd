@@ -42,7 +42,7 @@ export function SessionsHome({
 
       <EstateBoundary className="max-w-4xl text-sm leading-6" label="Privacy and local storage">
         <p className="font-semibold">Stored only in this browser</p>
-        <p className="mt-1">Data is not uploaded or synced. Records remain on this device until deleted or browser data is cleared.</p>
+        <p className="mt-1">Data is not uploaded or synced by AlignEd. Records remain on this device until deleted or browser data is cleared. If you choose Google Forms for feedback, Google stores learner submissions until you delete them there.</p>
         <p className="mt-2"><strong>Do not enter patient-identifiable information.</strong> Avoid learner-identifiable information unless it is necessary. Download a JSON backup before clearing browser data or moving devices.</p>
       </EstateBoundary>
 
