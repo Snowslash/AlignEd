@@ -39,7 +39,7 @@ describe('shared visual language contract', () => {
     expect(landing).not.toContain('build-note');
     expect(landing).not.toContain('<figcaption>');
     expect(landing).not.toContain('This is the current empty-state app');
-    expect(landingCss).toContain('border-block-end: 1px solid var(--estate-shoal)');
+    expect(landingCss).toContain('border-block-end: 1px solid var(--estate-rule)');
     expect(landingCss).toContain('.hero::after');
     expect(landingCss).toContain('background: var(--estate-coral)');
     expect(landingEntry).toContain('initialiseEstateTheme()');
@@ -76,4 +76,11 @@ describe('shared visual language contract', () => {
     expect(badges).toContain('rounded-sm');
     expect(badges).not.toContain('rounded-4xl');
   });
+});
+
+it('Deep Atlas boot chrome matches both landing and app with semantic section rules', () => {
+  for (const html of ['index.html', 'app/index.html']) {
+    expect(readFileSync(path.join(process.cwd(), html), 'utf8')).toContain('name="theme-color" content="#061e1d"');
+  }
+  expect(landingCss).toContain('border-block-end: 1px solid var(--estate-rule)');
 });
