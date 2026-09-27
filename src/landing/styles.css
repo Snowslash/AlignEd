@@ -18,7 +18,7 @@ h1, h2, h3 { color: var(--text-strong); font-family: var(--font-serif); letter-s
   align-items: center;
   gap: clamp(48px, 8vw, 110px);
   padding: 58px 0;
-  border-block-end: 1px solid var(--estate-shoal);
+  border-block-end: 1px solid var(--estate-rule);
 }
 .hero::after {
   position: absolute;
