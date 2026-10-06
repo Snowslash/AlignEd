@@ -38,9 +38,10 @@ describe('App', () => {
     expect(estateHeader?.nextElementSibling?.tagName).toBe('MAIN');
     expect(screen.getByRole('link', { name: 'Sangeev.me' })).toHaveAttribute('href', 'https://sangeev.me');
     expect(screen.getByRole('link', { name: 'Projects' })).toHaveAttribute('href', 'https://sangeev.me/#projects');
-    expect(screen.getByRole('link', { name: 'AlignEd' })).toHaveAttribute('aria-current', 'page');
-    expect(screen.getByRole('link', { name: 'Op notes' })).toBeVisible();
-    expect(screen.getByRole('link', { name: 'Scratchpad' })).toBeVisible();
+    expect(Array.from(navigation.querySelectorAll('a')).map((link) => [link.getAttribute('aria-label') || link.textContent, link.getAttribute('href')])).toEqual([
+      ['Projects', 'https://sangeev.me/#projects'],
+      ['GitHub', 'https://github.com/Snowslash'],
+    ]);
   });
 
   it('starts on a sessions home with two explicit entry routes', async () => {

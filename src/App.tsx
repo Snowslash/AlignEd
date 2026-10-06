@@ -213,6 +213,7 @@ export default function App() {
     <div className="min-h-screen">
       <PublicEstateHeader
         current="aligned"
+        navigation="projects"
         theme={theme}
         onToggleTheme={toggleTheme}
       />
