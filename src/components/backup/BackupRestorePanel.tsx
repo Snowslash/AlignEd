@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 
 interface BackupRestorePanelProps {
   importStatus: string;
+  backupStatus: string;
   focusImportRequest: number;
   onDownloadBackup: () => void;
   onDeleteAllData: () => void;
@@ -14,6 +15,7 @@ interface BackupRestorePanelProps {
 
 export function BackupRestorePanel({
   importStatus,
+  backupStatus,
   focusImportRequest,
   onDownloadBackup,
   onDeleteAllData,
@@ -31,6 +33,7 @@ export function BackupRestorePanel({
       <CardHeader>
         <CardTitle><h2 className="font-heading text-lg font-semibold">Application backup</h2></CardTitle>
         <CardDescription>JSON backs up the AlignEd library. Markdown export remains the portfolio-facing artefact.</CardDescription>
+        <p className="text-sm text-muted-foreground" aria-live="polite">{backupStatus}</p>
       </CardHeader>
       <CardContent className="flex flex-wrap items-end gap-3">
         <Button onClick={onDownloadBackup} type="button" variant="outline">Download JSON backup</Button>

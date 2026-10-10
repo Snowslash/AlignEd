@@ -31,6 +31,7 @@ import {
 } from './domain/core';
 import { getCaptureValidationErrors, getSuggestedResumeStage, type CaptureValidationErrors } from './domain/workflow';
 import { GOOGLE_FORM_STORAGE_KEY } from './domain/google-feedback';
+import { useBackupStatus } from './domain/backup-status';
 
 
 const STORAGE_KEY = 'aligned.sessions.v1';
@@ -74,15 +75,6 @@ function persistSessions(sessions: TeachingSession[]) {
   }
 }
 
-function downloadText(filename: string, text: string) {
-  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement('a');
-  anchor.href = url;
-  anchor.download = filename;
-  anchor.click();
-  URL.revokeObjectURL(url);
-}
 
 function updateSession(sessions: TeachingSession[], updated: TeachingSession): TeachingSession[] {
   return sessions.map((session) => (session.id === updated.id ? { ...updated, updatedAt: new Date().toISOString() } : session));
@@ -101,6 +93,7 @@ function getQuickFormErrors(form: QuickFormState): CaptureValidationErrors {
 export default function App() {
   const [initialLoad] = useState(loadSessions);
   const [sessions, setSessions] = useState<TeachingSession[]>(initialLoad.sessions);
+  const { status: backupStatus, exportBackup, clearBackupStatus } = useBackupStatus(sessions);
   const [canPersist, setCanPersist] = useState(!initialLoad.error);
   const [loadError, setLoadError] = useState(initialLoad.error);
   const [selectedId, setSelectedId] = useState<string | undefined>();
@@ -189,6 +182,14 @@ export default function App() {
 
   const confirmJsonImport = () => {
     if (!pendingImport) return;
+    try {
+      clearBackupStatus();
+    } catch {
+      setImportStatus('Could not clear the previous backup status. Library unchanged. Please try again.');
+      setPendingImport(null);
+      setBackupImportFocusRequest((request) => request + 1);
+      return;
+    }
     setCanPersist(true);
     setLoadError(null);
     setSessions(pendingImport);
@@ -201,6 +202,7 @@ export default function App() {
 
   const deleteAllLocalData = () => {
     try {
+      clearBackupStatus();
       localStorage.removeItem(STORAGE_KEY);
       localStorage.removeItem(LEGACY_STORAGE_KEY);
       localStorage.removeItem(GOOGLE_FORM_STORAGE_KEY);
@@ -251,7 +253,8 @@ export default function App() {
           }}
           onOpenSession={openSession}
           onAddDemo={addDemo}
-          onDownloadBackup={() => downloadText('aligned-backup.json', serialiseSessions(sessions))}
+          backupStatus={backupStatus}
+          onDownloadBackup={exportBackup}
           onDeleteAllData={() => setDeleteConfirmationOpen(true)}
           onImportBackup={previewJsonImport}
         />
@@ -298,7 +301,8 @@ export default function App() {
             setBackupImportFocusRequest((request) => request + 1);
           }}
           onConfirm={confirmJsonImport}
-          onDownloadCurrentBackup={() => downloadText('aligned-backup.json', serialiseSessions(sessions))}
+          backupStatus={backupStatus}
+          onDownloadCurrentBackup={exportBackup}
           sessionCount={pendingImport.length}
         />
       )}

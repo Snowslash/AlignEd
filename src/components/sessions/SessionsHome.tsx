@@ -11,6 +11,7 @@ import type { EntryMode } from './types';
 interface SessionsHomeProps {
   sessions: TeachingSession[];
   importStatus: string;
+  backupStatus: string;
   onOpenEntry: (mode: EntryMode) => void;
   onOpenSession: (id: string) => void;
   onAddDemo: () => void;
@@ -23,6 +24,7 @@ interface SessionsHomeProps {
 export function SessionsHome({
   sessions,
   importStatus,
+  backupStatus,
   onOpenEntry,
   onOpenSession,
   onAddDemo,
@@ -106,6 +108,7 @@ export function SessionsHome({
       <BackupRestorePanel
         focusImportRequest={backupImportFocusRequest}
         importStatus={importStatus}
+        backupStatus={backupStatus}
         onDownloadBackup={onDownloadBackup}
         onDeleteAllData={onDeleteAllData}
         onImportBackup={onImportBackup}

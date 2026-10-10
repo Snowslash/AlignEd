@@ -34,6 +34,7 @@ describe('Sessions resume refinement', () => {
     render(
       <SessionsHome
         backupImportFocusRequest={0}
+        backupStatus="No backup export recorded for this library."
         importStatus=""
         onAddDemo={() => {}}
         onDownloadBackup={() => {}}

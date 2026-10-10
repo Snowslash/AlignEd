@@ -6,6 +6,7 @@ const focusableSelector = 'button:not([disabled]), [href], input:not([disabled])
 
 interface RestoreConfirmationProps {
   sessionCount: number;
+  backupStatus: string;
   onCancel: () => void;
   onConfirm: () => void;
   onDownloadCurrentBackup: () => void;
@@ -13,6 +14,7 @@ interface RestoreConfirmationProps {
 
 export function RestoreConfirmation({
   sessionCount,
+  backupStatus,
   onCancel,
   onConfirm,
   onDownloadCurrentBackup,
@@ -60,6 +62,7 @@ export function RestoreConfirmation({
           Detected {sessionCount} session{sessionCount === 1 ? '' : 's'} in this backup. Continuing will replace your current local session library; it will not merge sessions.
         </p>
         <p className="mt-3 text-sm text-muted-foreground">Download a current backup before replacing the library.</p>
+        <p className="mt-3 text-sm text-muted-foreground" aria-live="polite">{backupStatus}</p>
         <div className="mt-5 flex flex-wrap justify-end gap-2">
           <Button onClick={onDownloadCurrentBackup} ref={downloadBackupButtonRef} type="button" variant="outline">Download current backup</Button>
           <Button onClick={onCancel} type="button" variant="ghost">Cancel restore</Button>
