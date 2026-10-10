@@ -2,6 +2,19 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 describe('production deployment contract', () => {
+  it('gives only the indexable landing its self-canonical', () => {
+    expect(readFileSync('index.html', 'utf8')).toContain('<link rel="canonical" href="https://aligned.sangeev.me/" />');
+    expect(readFileSync('app/index.html', 'utf8')).not.toMatch(/rel="canonical"|name="robots"/i);
+  });
+
+  it('ships a standalone missing-page document rather than a landing or app shell', () => {
+    const html = readFileSync('public/404.html', 'utf8');
+    expect(html).toContain('<h1>Page not found</h1>');
+    expect(html).toContain('href="/"');
+    expect(html).toContain('href="/app/"');
+    expect(html).not.toMatch(/<script\b|id="root"/i);
+  });
+
   it('ships the canonical licences for the self-hosted estate fonts', () => {
     for (const license of ['OFL-Atkinson-Hyperlegible-Next.txt', 'OFL-Literata.txt']) {
       expect(readFileSync(`public/licenses/${license}`, 'utf8')).toBe(
@@ -43,7 +56,7 @@ describe('production deployment contract', () => {
     const config = JSON.parse(readFileSync('wrangler.jsonc', 'utf8'));
 
     expect(config.name).toBe('aligned');
-    expect(config.assets).toMatchObject({ directory: './dist', not_found_handling: 'single-page-application' });
+    expect(config.assets).toMatchObject({ directory: './dist', not_found_handling: '404-page' });
     expect(config.observability).toEqual({ enabled: false });
     expect(config.routes).toContainEqual({ pattern: 'aligned.sangeev.me', custom_domain: true });
   });
