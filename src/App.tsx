@@ -200,8 +200,17 @@ export default function App() {
   };
 
   const deleteAllLocalData = () => {
-    localStorage.removeItem(LEGACY_STORAGE_KEY);
-    localStorage.removeItem(GOOGLE_FORM_STORAGE_KEY);
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(LEGACY_STORAGE_KEY);
+      localStorage.removeItem(GOOGLE_FORM_STORAGE_KEY);
+    } catch {
+      setImportStatus('Could not delete all local data. Some data may remain in this browser. Please try again.');
+      setDeleteConfirmationOpen(false);
+      return;
+    }
+    setCanPersist(true);
+    setLoadError(null);
     setSessions([]);
     setSelectedId(undefined);
     setEntryMode(null);

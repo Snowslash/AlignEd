@@ -97,6 +97,73 @@ describe('App', () => {
     expect(screen.getByRole('status')).toHaveTextContent(/Deleted all locally stored sessions/i);
   });
 
+  it('deletes a corrupt library and resumes saving new sessions', async () => {
+    localStorage.setItem('aligned.sessions.v1', 'not JSON');
+    localStorage.setItem('teaching-portfolio-tracker.sessions.v1', serialiseSessions([buildDemoSession()]));
+    localStorage.setItem('aligned.google-form.v1', 'saved form');
+    const { unmount } = render(<App />);
+
+    expect(screen.getByRole('alert')).toHaveTextContent(/Could not load the local session library/i);
+    expect(localStorage.getItem('aligned.sessions.v1')).toBe('not JSON');
+    await userEvent.click(screen.getByRole('button', { name: /Delete all local data/i }));
+    await userEvent.click(screen.getByRole('button', { name: /^Delete local data$/i }));
+
+    expect(localStorage.getItem('aligned.sessions.v1')).not.toBe('not JSON');
+    expect(JSON.parse(localStorage.getItem('aligned.sessions.v1') ?? '{}').sessions).toEqual([]);
+    expect(localStorage.getItem('teaching-portfolio-tracker.sessions.v1')).toBeNull();
+    expect(localStorage.getItem('aligned.google-form.v1')).toBeNull();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(screen.getByText(/No sessions yet/i)).toBeInTheDocument();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent(/Deleted all locally stored sessions/i);
+
+    await userEvent.click(screen.getByRole('button', { name: /Add demo data/i }));
+    const stored = JSON.parse(localStorage.getItem('aligned.sessions.v1') ?? '{}');
+    expect(stored.sessions).toHaveLength(1);
+    unmount();
+    render(<App />);
+    expect(screen.getByRole('button', { name: new RegExp(stored.sessions[0].title, 'i') })).toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('removes the current storage key even when saving the empty library fails', async () => {
+    localStorage.setItem('aligned.sessions.v1', 'not JSON');
+    render(<App />);
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new DOMException('Storage full', 'QuotaExceededError');
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: /Delete all local data/i }));
+    await userEvent.click(screen.getByRole('button', { name: /^Delete local data$/i }));
+
+    expect(localStorage.getItem('aligned.sessions.v1')).toBeNull();
+    expect(screen.queryByText(/Could not load the local session library/i)).not.toBeInTheDocument();
+    expect(screen.getByRole('alert')).toHaveTextContent(/Could not save locally/i);
+  });
+
+  it.each(['aligned.sessions.v1', 'teaching-portfolio-tracker.sessions.v1', 'aligned.google-form.v1'])(
+    'reports deletion failure for %s without claiming success or clearing the in-memory library', async (failedKey) => {
+      const session = buildDemoSession();
+      localStorage.setItem('aligned.sessions.v1', serialiseSessions([session]));
+      localStorage.setItem('teaching-portfolio-tracker.sessions.v1', serialiseSessions([session]));
+      localStorage.setItem('aligned.google-form.v1', 'saved form');
+      render(<App />);
+      const originalRemoveItem = Storage.prototype.removeItem;
+      vi.spyOn(Storage.prototype, 'removeItem').mockImplementation(function (this: Storage, key) {
+        if (key === failedKey) throw new DOMException('Storage unavailable', 'SecurityError');
+        originalRemoveItem.call(this, key);
+      });
+
+      await userEvent.click(screen.getByRole('button', { name: /Delete all local data/i }));
+      await userEvent.click(screen.getByRole('button', { name: /^Delete local data$/i }));
+
+      expect(screen.getByRole('status')).toHaveTextContent(/Could not delete all local data/i);
+      expect(screen.queryByText(/Deleted all locally stored sessions/i)).not.toBeInTheDocument();
+      expect(localStorage.getItem(failedKey)).not.toBeNull();
+      expect(screen.getByRole('button', { name: new RegExp(session.title, 'i') })).toBeInTheDocument();
+    },
+  );
+
   it('loads an existing library from the legacy storage key', () => {
     const legacySession = buildQuickSession({
       title: 'Legacy storage session',

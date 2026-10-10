@@ -10,7 +10,6 @@ interface BackupRestorePanelProps {
   onDownloadBackup: () => void;
   onDeleteAllData: () => void;
   onImportBackup: (raw: string) => void;
-  sessionCount: number;
 }
 
 export function BackupRestorePanel({
@@ -19,7 +18,6 @@ export function BackupRestorePanel({
   onDownloadBackup,
   onDeleteAllData,
   onImportBackup,
-  sessionCount,
 }: BackupRestorePanelProps) {
   const importInputRef = useRef<HTMLInputElement>(null);
   const [fileReadError, setFileReadError] = useState('');
@@ -47,7 +45,7 @@ export function BackupRestorePanel({
               .catch(() => setFileReadError('Could not read backup file. Choose another JSON backup and try again.'));
           }} />
         </div>
-        <Button disabled={sessionCount === 0} onClick={onDeleteAllData} type="button" variant="destructive">Delete all local data</Button>
+        <Button onClick={onDeleteAllData} type="button" variant="destructive">Delete all local data</Button>
         {fileReadError && <div className="rounded-sm border border-destructive/45 bg-destructive/10 px-3 py-2 text-sm text-destructive" role="alert">{fileReadError}</div>}
         {importStatus && <div className="rounded-lg border border-border bg-muted px-3 py-2 text-sm" role="status">{importStatus}</div>}
       </CardContent>

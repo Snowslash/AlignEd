@@ -109,7 +109,6 @@ export function SessionsHome({
         onDownloadBackup={onDownloadBackup}
         onDeleteAllData={onDeleteAllData}
         onImportBackup={onImportBackup}
-        sessionCount={sessions.length}
       />
     </section>
   );
