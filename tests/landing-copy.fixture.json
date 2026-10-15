@@ -1,0 +1,20 @@
+{
+  "config": "src/landing/project.ts",
+  "html": "index.html",
+  "key": "aligned",
+  "name": "AlignEd",
+  "description": "Keeps your teaching plans, feedback and reflections together, then exports them for your portfolio.",
+  "sourceHref": "https://github.com/Snowslash/AlignEd",
+  "limits": "AlignEd doesn’t check your evidence, grade your teaching or send anything to your training portfolio. The feedback QR codes open your own Google Form, with the session title and date filled in.",
+  "beforeYouUse": [
+    "Don’t enter anything that could identify a patient, and leave learners’ names out unless you really need them.",
+    "Your sessions are saved in this browser. If you use the optional Google Forms feedback, Google keeps those answers until you delete them there.",
+    "Download a backup before you clear your browser data or switch devices."
+  ],
+  "actions": [
+    {
+      "label": "Open AlignEd",
+      "href": "./app/"
+    }
+  ]
+}

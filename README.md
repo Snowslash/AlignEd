@@ -143,3 +143,36 @@ npm run check    # lint, test and build
 ```
 
 AlignEd is built with React, TypeScript, Vite and Tailwind CSS. The interface uses local shadcn/ui component source under `src/components/ui/`; migration from the original custom CSS is intentionally incremental so each workflow slice remains tested.
+
+## Desk landing verification
+
+The public landing uses the reviewed `ProjectPage.tsx` and `project-page.css`
+template with project-specific copy in `project.ts`. Keep the template copies
+identical to the [canonical project-page source](https://github.com/Snowslash/sangeev-me/tree/main/project-pages); the estate UI dependency
+continues to own shared chrome and tokens, not this page body. The initial HTML
+keeps the introduction, safety boundaries and real destinations available without
+JavaScript. The application source and estate archive pin are unchanged; the
+separately authorised dependency-security refresh is recorded below.
+
+Using Node 22.23+ within Node 22, install from the lockfile with `npm ci`, then run:
+
+```sh
+npm run lint
+npm test -- --maxWorkers=1
+npm run build
+LANDING_BUILT=dist node --test tests/landing-copy.contract.mjs tests/landing-motion.contract.mjs
+```
+
+The landing tests use Node's type stripping, not the TypeScript compiler API. They
+check literal reviewed copy, initial/emitted HTML and the actual screenshot hook's
+completion, cancellation, fallback, reduced-motion and same-print reopen lifecycle.
+They simulate DOM/time/scheduling; real focus, inertness and animation appearance
+still require browser acceptance. Run these additional contracts alongside the
+native checks above; they are not implicitly included in `npm test`.
+
+Local preparation on 15 October 2026 passed lint, 150 Vitest tests, the TypeScript/Vite build and 9 landing copy/lifecycle checks.
+This is local build verification, not a new deployment claim.
+The inherited 6 audit findings (4 high, 2 moderate) were resolved by the compatible
+lockfile refresh in [RELEASE-SECURITY.md](RELEASE-SECURITY.md). Fresh locked installs
+and full/production-filtered audits report zero findings. Rendered browser and
+live deployment acceptance remain separate gates.
