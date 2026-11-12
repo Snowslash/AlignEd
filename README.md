@@ -105,9 +105,12 @@ This runs:
 npm run lint
 npm test
 npm run build
+npm run test:landing
 ```
 
 Build output is written to `dist/`. The `dist/` directory is ignored by git.
+The ordinary CI workflow runs the same check: landing contracts run **after**
+the production build and check the actual `dist/index.html` as well as source.
 
 ## Data export and backup
 
@@ -119,6 +122,24 @@ Inside the app:
 - Use **Copy Markdown**, **Download Markdown** or **Print or save PDF** in the **Export** stage to save an evidence pack for one session.
 
 The JSON backup is for app data. The Markdown export is for your portfolio evidence record. Legacy framework tags remain in saved sessions and JSON backups but are no longer shown in the editor or evidence pack. Advanced planning metadata is included in the pack only while Advanced mode is enabled; turning it off does not delete saved values or rewrite authored reflections.
+
+Restore accepts version-1 envelopes and legacy session arrays. The whole library
+is validated before replacement is offered; a malformed nested value rejects the
+backup, rather than dropping a row or silently converting it to default evidence.
+Malformed saved data also stays untouched on initial load, with an error shown.
+Keep the original file when repairing a rejected backup.
+
+Supported legacy omissions are `level`, session `frameworkTags`,
+`feedbackQuestions`, `rigour`, `reflection` and `evidenceNotes`. A legacy rigour
+record with a boolean `enabled` may omit `utility` and `equityPrompt`; these get
+the existing planning defaults. An omitted `doseCheck` stays omitted. Present
+values (including `null`) must have the expected type: string arrays, recognised
+objective classifications, finite 1–5 scores, a boolean rigour flag, and complete
+reflection/dose structures. Objective IDs must be nonblank and unique within a
+session; session IDs remain unique across the backup. Empty draft text and empty
+arrays are still allowed. Authored text, IDs, dates/timestamps, legacy tags and
+Google CSV provenance/deduplication fields are preserved through round trips.
+Validation checks structure, not the truth of the recorded evidence.
 
 ## Project status
 
@@ -139,7 +160,8 @@ npm run dev      # start Vite locally
 npm run lint     # run oxlint
 npm test         # run Vitest
 npm run build    # create a production build
-npm run check    # lint, test and build
+npm run test:landing # verify source and built landing (build first)
+npm run check    # lint, test, build and landing contracts
 ```
 
 AlignEd is built with React, TypeScript, Vite and Tailwind CSS. The interface uses local shadcn/ui component source under `src/components/ui/`; migration from the original custom CSS is intentionally incremental so each workflow slice remains tested.
@@ -160,15 +182,18 @@ Using Node 22.23+ within Node 22, install from the lockfile with `npm ci`, then 
 npm run lint
 npm test -- --maxWorkers=1
 npm run build
-LANDING_BUILT=dist node --test tests/landing-copy.contract.mjs tests/landing-motion.contract.mjs
+npm run test:landing
 ```
 
 The landing tests use Node's type stripping, not the TypeScript compiler API. They
 check literal reviewed copy, initial/emitted HTML and the actual screenshot hook's
 completion, cancellation, fallback, reduced-motion and same-print reopen lifecycle.
 They simulate DOM/time/scheduling; real focus, inertness and animation appearance
-still require browser acceptance. Run these additional contracts alongside the
-native checks above; they are not implicitly included in `npm test`.
+still require browser acceptance. These contracts are included in `npm run check`
+and CI after the build; `npm test` alone remains the Vitest suite. Running
+`npm run test:landing` without a built `dist/index.html` fails rather than
+silently checking only the source fallback. No landing templates are synced by
+these commands.
 
 Local preparation on 15 October 2026 passed lint, 150 Vitest tests, the TypeScript/Vite build and 9 landing copy/lifecycle checks.
 This is local build verification, not a new deployment claim.

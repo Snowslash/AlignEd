@@ -2,6 +2,16 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 describe('production deployment contract', () => {
+  it('runs named landing contracts against dist after the build in the ordinary CI check', () => {
+    const { scripts } = JSON.parse(readFileSync('package.json', 'utf8'));
+    expect(scripts['test:landing']).toBe('LANDING_BUILT=dist node --test tests/landing-copy.contract.mjs tests/landing-motion.contract.mjs');
+    const checks = scripts.check.split(' && ');
+    expect(checks).toEqual(['npm run lint', 'npm run test', 'npm run build', 'npm run test:landing']);
+    const workflow = readFileSync('.github/workflows/ci.yml', 'utf8');
+    expect(workflow).toContain('run: npm run check');
+    expect(workflow).toContain("node-version: '22.23.3'");
+  });
+
   it('gives only the indexable landing its self-canonical', () => {
     expect(readFileSync('index.html', 'utf8')).toContain('<link rel="canonical" href="https://aligned.sangeev.me/" />');
     expect(readFileSync('app/index.html', 'utf8')).not.toMatch(/rel="canonical"|name="robots"/i);

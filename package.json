@@ -9,7 +9,8 @@
     "lint": "oxlint .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "check": "npm run lint && npm run test && npm run build"
+    "test:landing": "LANDING_BUILT=dist node --test tests/landing-copy.contract.mjs tests/landing-motion.contract.mjs",
+    "check": "npm run lint && npm run test && npm run build && npm run test:landing"
   },
   "dependencies": {
     "@sangeev/estate-ui": "file:vendor/sangeev-estate-ui-2.0.0-alpha.7.tgz",

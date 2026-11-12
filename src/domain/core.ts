@@ -567,32 +567,89 @@ function normaliseImportedSession(value: unknown, index: number): TeachingSessio
   if (!hasValidIsoDate(session.date!)) throw new Error(`Session ${index + 1} has an invalid date.`);
   if (!Number.isFinite(session.durationMinutes) || session.durationMinutes! <= 0) throw new Error(`Session ${index + 1} has an invalid duration.`);
   if (!Array.isArray(session.objectives) || !session.objectives.every(isValidObjective)) throw new Error(`Session ${index + 1} has invalid objectives.`);
+  const objectiveIds = new Set<string>();
+  for (const objective of session.objectives) {
+    if (objectiveIds.has(objective.id)) throw new Error(`Session ${index + 1} contains duplicate objective ID: ${objective.id}.`);
+    objectiveIds.add(objective.id);
+  }
   if (!Array.isArray(session.feedbackResponses) || !session.feedbackResponses.every(isValidFeedbackResponse)) throw new Error(`Session ${index + 1} has invalid feedback responses.`);
-  if (session.reflection && !isValidReflection(session.reflection)) throw new Error(`Session ${index + 1} has an invalid reflection.`);
+  if (session.reflection !== undefined && !isValidReflection(session.reflection)) throw new Error(`Session ${index + 1} has an invalid reflection.`);
+  if (session.frameworkTags !== undefined && !isStringArray(session.frameworkTags)) throw new Error(`Session ${index + 1} has invalid framework tags.`);
+  if (session.feedbackQuestions !== undefined && !isStringArray(session.feedbackQuestions)) throw new Error(`Session ${index + 1} has invalid feedback questions.`);
+  for (const key of ['level', 'evidenceNotes'] as const) {
+    if (session[key] !== undefined && typeof session[key] !== 'string') throw new Error(`Session ${index + 1} has invalid ${key}.`);
+  }
 
+  // JSON cannot contain undefined: only genuinely absent legacy fields get
+  // defaults. Present nulls, false values and malformed containers are rejected.
   return {
     ...session,
-    level: typeof session.level === 'string' ? session.level : 'Mixed',
-    frameworkTags: Array.isArray(session.frameworkTags) ? session.frameworkTags : [DEFAULT_FRAMEWORK_TAG],
-    feedbackQuestions: Array.isArray(session.feedbackQuestions) ? session.feedbackQuestions : generateFeedbackQuestions(session.objectives),
-    rigour: session.rigour ?? { enabled: false, utility: { validity: 3, reliability: 3, educationalImpact: 3, acceptability: 4, cost: 4 }, equityPrompt: '' },
+    level: session.level ?? 'Mixed',
+    frameworkTags: session.frameworkTags ?? [DEFAULT_FRAMEWORK_TAG],
+    feedbackQuestions: session.feedbackQuestions ?? generateFeedbackQuestions(session.objectives),
+    rigour: normaliseImportedRigour(session.rigour, index),
     reflection: session.reflection ?? emptyGibbsReflection(session.title!),
-    evidenceNotes: typeof session.evidenceNotes === 'string' ? session.evidenceNotes : '',
+    evidenceNotes: session.evidenceNotes ?? '',
   } as TeachingSession;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+function isStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((entry) => typeof entry === 'string');
+}
+
+function isValidUtility(value: unknown): value is UtilityScoreInput {
+  if (!isRecord(value)) return false;
+  return Object.keys(utilityLabels).every((key) => {
+    const score = value[key];
+    return typeof score === 'number' && Number.isFinite(score) && score >= 1 && score <= 5;
+  });
+}
+
+function isValidDoseCheck(value: unknown): value is ReturnType<typeof checkDose> {
+  return isRecord(value)
+    && (value.status === 'pass' || value.status === 'warning')
+    && typeof value.message === 'string'
+    && typeof value.suggestedMax === 'number' && Number.isInteger(value.suggestedMax) && value.suggestedMax > 0;
+}
+
+function normaliseImportedRigour(value: unknown, index: number): TeachingSession['rigour'] {
+  const rigour = value === undefined ? { enabled: false } : value;
+  if (!isRecord(rigour)
+    || typeof rigour.enabled !== 'boolean'
+    || (rigour.utility !== undefined && !isValidUtility(rigour.utility))
+    || (rigour.equityPrompt !== undefined && typeof rigour.equityPrompt !== 'string')
+    || (rigour.doseCheck !== undefined && !isValidDoseCheck(rigour.doseCheck))) {
+    throw new Error(`Session ${index + 1} has invalid rigour settings.`);
+  }
+  // Older advanced sessions can contain only { enabled: true }. Keep that
+  // choice, fill absent planning defaults, and never fabricate a dose check.
+  return {
+    ...rigour,
+    utility: rigour.utility ?? { validity: 3, reliability: 3, educationalImpact: 3, acceptability: 4, cost: 4 },
+    equityPrompt: rigour.equityPrompt ?? '',
+  } as TeachingSession['rigour'];
+}
+
 function isValidObjective(value: unknown): value is Objective {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
-  const item = value as Record<string, unknown>;
-  return ['id', 'text', 'bloom', 'activity', 'assessment'].every((key) => typeof item[key] === 'string')
-    && Array.isArray(item.evidence) && item.evidence.every((evidence) => typeof evidence === 'string')
-    && Array.isArray(item.frameworkTags) && item.frameworkTags.every((tag) => typeof tag === 'string');
+  if (!isRecord(value)) return false;
+  return typeof value.id === 'string' && Boolean(value.id.trim())
+    && ['text', 'activity', 'assessment'].every((key) => typeof value[key] === 'string')
+    && typeof value.bloom === 'string' && ['Remember', 'Understand', 'Apply', 'Analyse', 'Evaluate', 'Create'].includes(value.bloom)
+    && (value.miller === undefined || (typeof value.miller === 'string' && ['Knows', 'Knows how', 'Shows how', 'Does'].includes(value.miller)))
+    && (value.dreyfusStage === undefined || (typeof value.dreyfusStage === 'string' && ['Novice', 'Advanced beginner', 'Competent', 'Proficient', 'Expert'].includes(value.dreyfusStage)))
+    && (value.observedStandard === undefined || typeof value.observedStandard === 'string')
+    && isStringArray(value.evidence) && value.evidence.every((entry) => ['Attendance', 'Feedback', 'Reflection', 'Certificate', 'Photo/artefact'].includes(entry))
+    && isStringArray(value.frameworkTags);
 }
 
 function isValidFeedbackResponse(value: unknown): value is FeedbackResponse {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
   const scoreFields = new Set(['clarity', 'usefulness', 'preConfidence', 'postConfidence']);
-  const textFields = new Set(['freeText', 'peerObservation']);
+  const textFields = new Set(['freeText', 'peerObservation', 'googleFormsImportKey', 'googleFormsTimestamp']);
   return Object.entries(value as Record<string, unknown>).every(([key, entry]) => {
     if (scoreFields.has(key)) return typeof entry === 'number' && Number.isFinite(entry) && entry >= 1 && entry <= 5;
     if (textFields.has(key)) return typeof entry === 'string';
